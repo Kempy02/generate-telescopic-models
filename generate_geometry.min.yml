@@ -14,7 +14,8 @@ dependencies:
   - matplotlib
   - ipython
   - ffmpeg
-  - jupyterlab
+  # - jupyterlab
   - pip
   - pip:
       - geomdl==5.3.1
+      - pytictoc

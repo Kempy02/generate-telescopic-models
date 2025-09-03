@@ -1,0 +1,22 @@
+# Ignore cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Ignore CAD files
+*.stl
+*.STEP
+*.STP
+
+# Ignore plot files
+*.png
+
+# Ignore generated config csv files
+*_interp.csv

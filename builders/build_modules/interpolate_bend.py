@@ -108,7 +108,7 @@ def interpolate_bending_config(input_csv_path, base_params, step_deg=5, out_csv_
     # 6) Write CSV
     if out_csv_path is None:
         root, _ = os.path.splitext(input_csv_path)
-        out_csv_path = f"{root}_interp_{int(step_deg)}deg.csv"
+        out_csv_path = f"{root}_{int(step_deg)}deg_interp.csv"
 
     cols = ["angular_section"] + fieldnames
     with open(out_csv_path, "w", newline="") as f:
