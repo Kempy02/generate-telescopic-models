@@ -14,6 +14,7 @@ build/
 *.stl
 *.STEP
 *.STP
+*.3mf
 
 # Ignore plot files
 *.png
