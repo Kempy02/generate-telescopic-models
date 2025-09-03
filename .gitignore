@@ -18,5 +18,5 @@ build/
 # Ignore plot files
 *.png
 
-# Ignore generated config csv files
-*_interp.csv
+# Ignore csv files
+*.csv
