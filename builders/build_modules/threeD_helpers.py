@@ -120,28 +120,6 @@ def create_3d_model_bending(
     y_max = helpers.find_max_y(last_curve_points)
     last_thickness_factors = thickness_factors[-1]
 
-    # # comp time estimate
-    # ct_estimate = len(workplanes) * (0.45*np.random.uniform(0.96, 1.04))
-
-    # print(f"Beginning loft: [{len(workplanes)} workplanes]")
-    # print(f"Estimated time: {ct_estimate:.2f} seconds")
-
-    # start_progress_bar(ct_estimate)
-    # # Start the timer
-    # t.tic()
-    # try:
-    #     profile = workplanes[-1].loft(ruled=True,combine=True)
-    #     if loft_offset > 0:
-    #         cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)
-    #         final = profile + cap
-    #     else:
-    #         final = profile
-    # finally:
-    #     stop_progress_bar()
-
-    # # Stop the timer
-    # t.toc("Total build time:")
-
     profile = workplanes[-1].loft(ruled=True,combine=True)
     if loft_offset > 0:
         cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)
