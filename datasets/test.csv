@@ -1,0 +1,3 @@
+Prototype ID,export_folder,amplitude0,desired_radius,period_factors,offset_factor_x,mid_factor_x,curve_weight,thickness_factor,thickness,bending_config
+LINEAR1,prototype_models,20,25,"[1.0, 1.0, 1.0]",0,0,5,"[1.0, 1.0, 1.0]",1,None
+BENDING1,prototype_models,20,25,"[1.0, 1.0, 1.0]",0,0,5,"[1.0, 1.0, 1.0]",1,'bending5.csv'
