@@ -207,29 +207,6 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     )
 
     # Foundation (Constant)
-    # base2 = (
-    #     cq.Workplane("XZ")
-    #     .circle(base_build.foundation_radius)
-    #     # .polyline(base_radius_outline)
-    #     # .close()
-    #     .extrude(base_plate_height + 2)
-    #     .translate((0, -base_internal_height*exploded_factor, 0))
-    #     .faces(">Y")
-    #     .rect(f_desired_side_length, f_desired_side_length, forConstruction=True)
-    #     .vertices()
-    #     .circle(screw_radius)
-    #     .cutThruAll()
-    #     # The clamp
-    #     .faces("<Y")
-    #     .workplane()
-    #     .rect(clamp_side_length, clamp_side_length)
-    #     .extrude(clamp_depth, combine=True)
-    #     # The input hole
-    #     .faces("<Y")
-    #     .workplane()
-    #     .circle(base_input_radius)
-    #     .cutThruAll()
-    # )
     base2 = (
         cq.Workplane("XZ")
         .circle(base_build.foundation_radius)
@@ -254,8 +231,6 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     )
 
     base2 = base2.faces("<<Y[-2]").edges().fillet(5)
-
-    print(f"Screw hole distance: {desired_side_length}")
 
     base = base0 + base1 + base2
 
