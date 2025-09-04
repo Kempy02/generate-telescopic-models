@@ -8,9 +8,6 @@ from core.generate_geometry import generate_geometry, generate_geometry_bend
 
 from io_modules.exporting import export, export_plot
 from io_modules.plotting import (
-    plot_grouped_curves,
-    plot_thickness_and_factors,
-    plot_twoD_xsection,
     plot_twoD_xsection_by_model,
     plot_grouped_curves_by_model,
     plot_twoD_xsection_by_model_3d
@@ -133,7 +130,7 @@ def generate_prototypes(
         if any(e.get("section_idx", 0) > 0 for e in plots_data.get(bucket, [])):
             fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True)
         else:
-            fig2 = plot_thickness_and_factors(plots_data)
+            fig2 = plot_twoD_xsection_by_model(plots_data)
         export_plot(fig2, title=twoD_plots_filename, export_type="png",
                     directory=run.directory, folder=plots_export_folder, overwrite=True)
 

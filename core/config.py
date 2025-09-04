@@ -62,3 +62,11 @@ class ResampleSettings:
 @dataclass
 class BendSettings:
     angle_intervals: float = 5.0  # degrees between each workplane
+
+@dataclass
+class BaseBuildSettings:
+    foundation_radius = 55.0
+    foundation_height = 5.0
+    foundation_screw_constant = 84.0
+    foundation_screw_slot = 15.0
+    f_outer_screw_tolerance = 10.0
