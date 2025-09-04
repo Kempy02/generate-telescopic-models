@@ -158,7 +158,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .faces(">Y")
         .rect(desired_side_length, desired_side_length, forConstruction=True)
         .vertices()
-        .circle(screw_radius)
+        .circle(screw_radius*1.25)
         .cutThruAll()
         # Internal base plate
         .faces(">Y")
@@ -195,7 +195,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .faces(">Y")
         .rect(desired_side_length, desired_side_length, forConstruction=True)
         .vertices()
-        .circle(screw_radius)
+        .circle(screw_radius*1.25)
         .cutThruAll()
         # Hollow the plate
         .faces(">Y")
