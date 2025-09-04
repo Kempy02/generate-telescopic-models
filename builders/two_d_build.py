@@ -69,9 +69,10 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     )
 
     total = resample.resolution
-    twoD_cross_section_resampled = resample_cross_section_points(twoD_cross_section, total)
+    twoD_cross_section_resampled, arc_length = resample_cross_section_points(twoD_cross_section, total)
 
     return CrossSections2D(
         twoD_cross_section=twoD_cross_section_resampled,
-        thickness_factors=thickness_factors
+        thickness_factors=thickness_factors,
+        arc_length=arc_length
     )

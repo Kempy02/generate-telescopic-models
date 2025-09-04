@@ -163,13 +163,10 @@ def resample_cross_section_points(
     if ring[0] != ring[-1]:
         ring.append(ring[0])
 
-    # # snap x coordinates to extremes
-    # snapped = snap_x_to_extremes(ring)
-    # ring = snapped
+    # Calculate arc length [1d]
+    arc_length = sum(_segment_lengths(outer_rs))
 
-    # print(f"Resampled cross-section points: {ring}")
-
-    return ring
+    return ring, arc_length
 
 def snap_x_to_extremes(ring, thresh=0.5):
         """

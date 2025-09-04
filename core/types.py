@@ -36,6 +36,7 @@ class CrossSections2D:
     # one or many cross-sections; if many, ordered along centerline param s
     twoD_cross_section: List[Point]
     thickness_factors: List[List[float]]
+    arc_length: float
 
 @dataclass
 class BendingSections:
