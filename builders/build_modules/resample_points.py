@@ -105,15 +105,10 @@ def resample_cross_section_points(
     """
     Resample a closed cross-section (polygon boundary) into four logical segments:
       1) 'Outer' arc: from min_x extremum to max_x extremum (forward along ring)
-      2) 'Max edge' (thickness bridge): short edge at max_x joining outer->inner
       3) 'Inner' arc: from max_x back to min_x (forward along ring)
-      4) 'Min edge' (thickness bridge): short edge at min_x joining inner->outer
 
     - Points are placed at evenly spaced arc-length intervals within each segment.
-    - Segment budgets (n for arcs, m for edges) are derived from total_samples and edge_fraction:
-        m = max(2, int(total_samples * edge_fraction / 2))  per edge
-        n = max(4, (total_samples - 2*m) // 2)              per arc
-      (Total ≈ 2*n + 2*m; may be off by ≤1 due to integer rounding.)
+    - Segment budgets (n for arcs) are derived from total_samples
 
     Returns a CLOSED ring (first point repeated at the end).
     """
@@ -158,7 +153,6 @@ def resample_cross_section_points(
     # print(f"Resampled inner arc points: {inner_rs} \n")
 
     # Stitch into one closed ring
-    # ring = outer_rs + maxe_rs + inner_rs + mine_rs
     ring = outer_rs + inner_rs
     if ring[0] != ring[-1]:
         ring.append(ring[0])
