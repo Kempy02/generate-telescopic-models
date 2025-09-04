@@ -27,16 +27,18 @@ def interpolate_bending_config(input_csv_path, base_params, step_deg=5, out_csv_
             base_row[k] = getattr(base_params, k, None)
 
         target_row = None
-        if float(rows[-1]["angular_section"]) == 355.0:
-            target_row = {"angular_section": 360.0}
-            for k in fieldnames:
-                target_row[k] = getattr(base_params, k, None)
-        # else if final row is equal to 360°, raise error
-        elif float(rows[-1]["angular_section"]) == 360.0:
+        # if final row is equal to 360°, raise error and correct
+        if float(rows[-1]["angular_section"]) == 360.0:
             for k in fieldnames:
                 if getattr(base_params, k, None) != getattr(rows[-1], k, None):
                     print("ERROR: Final row (360°) does not match base parameters.\n    Proceeding: Setting final row to base parameters.")
                     break
+            target_row = {"angular_section": 360.0}
+            for k in fieldnames:
+                target_row[k] = getattr(base_params, k, None)
+        # else set final row
+        # elif float(rows[-1]["angular_section"]) == 355.0:
+        else:
             target_row = {"angular_section": 360.0}
             for k in fieldnames:
                 target_row[k] = getattr(base_params, k, None)
