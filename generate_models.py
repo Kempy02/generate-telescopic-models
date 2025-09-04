@@ -14,13 +14,15 @@ from io_modules.plotting import (
 )
 from io_modules.read_csv import read_param_rows_csv
 
+from io_modules.write_output_csv import write_design_metrics_csv 
+
 from core.config import (
     optionsConfig,
     BaselineGeometryConfig,
     NURBSConfig,
     CurveSettings
 )
-from core.param_builder import build_params_from_row  # <--- NEW
+from core.param_builder import build_params_from_row 
 
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
@@ -42,6 +44,7 @@ def generate_prototypes(
     rows = read_param_rows_csv(csv_path)
     plots_data: Dict[str, List[Dict[str, Any]]] = {}
     bucket = "_all"
+    arc_length_by_id: Dict[str, Optional[float]] = {}
 
     for i, row in enumerate(rows, start=1):
         # Build Params directly from CSV row (no GeometryParams default)
@@ -65,6 +68,17 @@ def generate_prototypes(
             report = generate_geometry_bend(params, bending_csv_path, testing_mode=False)
         else:
             report = generate_geometry(params)
+
+        # # ---- Save arc length metric
+        if params.bending_enabled:
+            arc_length_by_angle = {}
+            for idx, xsec in enumerate(report.xsections2d_list):
+                arc_length_by_angle[f"{proto_id}_ang{idx}"] = xsec.arc_length
+                # Save max arc length for this prototype (ignore None values)
+            lengths = [v for v in arc_length_by_angle.values()]
+            arc_length_by_id[proto_id] = max(lengths)
+        else:
+            arc_length_by_id[proto_id] = report.xsections2d.arc_length
 
         # ---- Export model
         if run.export_model:
@@ -119,6 +133,9 @@ def generate_prototypes(
                 "control_points": report.curves1d.control_points,
                 "cross_section_points": report.xsections2d.twoD_cross_section,
             })
+
+    # ---- Write output metrics to CSV
+    write_design_metrics_csv(csv_path, arc_length_by_id)
 
     # ---- Plot once at the end
     if plots_data and getattr(run, "plot_1d", False):
