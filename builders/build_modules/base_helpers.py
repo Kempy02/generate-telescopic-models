@@ -35,7 +35,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     screw_radius       = screw_diameter/2
     screw_head_radius  = screw_head_diameter/2
     screw_tolerance    = screw_head_radius * 2
-    outer_screw_tolerance = screw_head_radius
+    outer_screw_tolerance = screw_head_radius * 2
     # desired_diameter   = 2*48.0 - 2*(screw_tolerance/2 + outer_screw_tolerance)
     # desired_side_length= desired_diameter/np.sqrt(2)
 
