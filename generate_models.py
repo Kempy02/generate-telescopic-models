@@ -82,12 +82,13 @@ def generate_prototypes(
 
         # ---- Export model
         if run.export_model:
+            print(f"Exporting 3D Model as {run.ch_export_type}...")
             export(
                 report.model3d.threeD_model,
                 title=params.export_filename,
                 overwrite=run.overwrite,
                 directory=run.directory,
-                export_type="stl",
+                export_type=run.ch_export_type,
                 folder=params.export_folder,
             )
 
@@ -166,6 +167,7 @@ def main():
         plot_2d=True,
         plot_3d=True,
         overwrite=True,
+        ch_export_type="stl",
         directory=".",
     )
     generate_prototypes(CSV_PATH, run=run)

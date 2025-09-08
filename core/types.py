@@ -64,6 +64,7 @@ class RunOptions:
     plot_2d: bool = False
     plot_3d: bool = False
     directory: Optional[str] = None
+    ch_export_type: str = None
     overwrite: bool = True
 
 @dataclass
