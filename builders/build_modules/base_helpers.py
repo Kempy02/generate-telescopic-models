@@ -91,9 +91,6 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
             seal_clamp_radius_pt = Point(seal_clamp_radius_pt_x, seal_clamp_radius_pt_y)
             seal_clamp_outline.append(seal_clamp_radius_pt)
 
-        # print first value of base_internal_radius_outline
-        print("Base Internal Radius Outline Point 0: ", base_internal_radius_outline[0].x)
-
         base_radius = helpers.find_max_value(base_radius_outline)
         base_internal_radius = helpers.find_min_value(base_internal_radius_outline)
 
@@ -148,8 +145,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
 
     # calculate displacement from outer edge to inner edge of the seal
     # First point (0 degrees) will always be at faces(">X")
-    print("Seal Clamp Outline Point 0: ", seal_clamp_outline[0][0])
-    first_displacement = desired_diameter/2 - seal_clamp_outline[0][0]
+    # first_displacement = desired_diameter/2 - seal_clamp_outline[0][0]
 
     jimstron_clamp_plate_width = 8
     jimstron_clamp_max_distance = 56
