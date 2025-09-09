@@ -74,8 +74,6 @@ def create_3d_model_bending(
     workplane0 = (cq.Workplane("XY")
                .polyline(initial_pts)
                .close()
-               .faces()
-               .workplane()
     )
 
     # append initial workplane to the list
@@ -100,7 +98,7 @@ def create_3d_model_bending(
         # print(f"Increment {i}: x_length = {x}, y_length = {y}")
 
         # Get the current workplane
-        workplane_now = workplanes[i].faces().workplane()
+        workplane_now = workplanes[i]
 
         # Calculate the z and x offsets
         x_variance = calculate_x_inc_variance(x_len, x_prev)
@@ -110,7 +108,8 @@ def create_3d_model_bending(
 
         # (2) CREATE THE WORKPLANES AND LOFT
 
-        workplane_new = workplane_now.transformed(offset=cq.Vector(x_offset, 0, z_offset),rotate=cq.Vector(0, angle, 0)).polyline(curve_points).close().faces().workplane()
+        workplane_new = workplane_now.transformed(offset=cq.Vector(x_offset, 0, z_offset),rotate=cq.Vector(0, angle, 0)).polyline(curve_points).close()
+
         workplanes.append(workplane_new)
 
         # print(f"completed increment {i+1}")
@@ -120,7 +119,8 @@ def create_3d_model_bending(
     y_max = helpers.find_max_y(last_curve_points)
     last_thickness_factors = thickness_factors[-1]
 
-    profile = workplanes[-1].loft(ruled=True,combine=True)
+    profile = workplanes[-1].loft(ruled=True,combine="a")
+    # intersect_face = workplane_new.extrude(0.1,both=True)
     if loft_offset > 0:
         cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)
         final = profile + cap

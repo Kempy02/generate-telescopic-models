@@ -134,11 +134,12 @@ def generate_geometry_bend(params: Params, bending_csv_path: str, testing_mode: 
         setattr(params, "bending_enabled", False)  # for testing - produce only plots
         model_3d = generate_3D_model(xsections2d_list[0], params, None)
     else:
-        start_progress_bar(ct_estimate)
-        try:
-            model_3d = generate_3D_model(xsections2d_list, params, total_angular_section)
-        finally:
-            stop_progress_bar()
+        model_3d = generate_3D_model(xsections2d_list, params, total_angular_section)
+        # start_progress_bar(ct_estimate)
+        # try:
+        #     model_3d = generate_3D_model(xsections2d_list, params, total_angular_section)
+        # finally:
+        #     stop_progress_bar()
 
     # Stop the timer
     t.toc("Total build time:")

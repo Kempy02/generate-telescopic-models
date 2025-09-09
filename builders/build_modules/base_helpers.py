@@ -21,13 +21,12 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
 
     exploded_factor = 10  # Factor to control the explosion of the base in Z direction (for exploded view of base rig)
 
-    base_extension  = 12.0 # Extra length for the base beyond the main body
     screw_diameter  = 3.0
     screw_head_diameter = 5.5
-    valve_diameter  = 11.1125
+    valve_diameter  = 11.2 # 1/4" BSPT Tapping Drill Size
 
     base_plate_height  = 2
-    base_internal_height= 5 - params.thickness  # (cap_height - thickness), if cap_height=5
+    base_internal_height= baseline.cap_height - params.thickness 
     height_factor      = 0.8
     base_input_radius  = valve_diameter/2
     wall_thickness     = 3
@@ -35,9 +34,12 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     screw_radius       = screw_diameter/2
     screw_head_radius  = screw_head_diameter/2
     screw_tolerance    = screw_head_radius * 2
-    outer_screw_tolerance = screw_head_radius * 2
+    outer_screw_tolerance = screw_head_radius * 2 
     # desired_diameter   = 2*48.0 - 2*(screw_tolerance/2 + outer_screw_tolerance)
     # desired_side_length= desired_diameter/np.sqrt(2)
+
+    # foundation screw slot
+    foundation_screw_slot = (screw_radius * 2) + (base_build.slide_length * 2) # x mm slide length on either side of screw
 
     clamp_side_length = 30
     clamp_depth       = 30
@@ -62,8 +64,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
             min_x = helpers.find_min_x(twoD_cross_section_points)
             max_x = helpers.find_max_x(twoD_cross_section_points)
 
-            base_rad_point = abs(max_x - min_x) + baseline.loft_offset + params.thickness * 2 + base_extension
-            base_internal_rad_point = base_rad_point - base_extension - baseline.cap_length - baseline.loft_offset - params.thickness * 2
+            base_rad_point = abs(max_x - min_x) + baseline.loft_offset + params.thickness * 2 + base_build.base_extension
+            base_internal_rad_point = base_rad_point - base_build.base_extension - baseline.cap_length - baseline.loft_offset - params.thickness * 2
 
             start_point = Point(0, 0)
 
@@ -78,8 +80,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
             base_internal_rad_outline_pt = Point(base_internal_rad_outline_pt_x, base_internal_rad_outline_pt_y)
             base_internal_radius_outline.append(base_internal_rad_outline_pt)
             # create seal_external_outline points
-            seal_external_outline_pt_x = start_point.x + (base_internal_rad_point + params.thickness*2 + baseline.base_tolerance) * np.cos(np.radians(bend.angle_intervals*i))
-            seal_external_outline_pt_y = start_point.y + (base_internal_rad_point + params.thickness*2 + baseline.base_tolerance) * np.sin(np.radians(bend.angle_intervals*i))
+            seal_external_outline_pt_x = start_point.x + (base_internal_rad_point + params.thickness*2 + base_build.base_tolerance) * np.cos(np.radians(bend.angle_intervals*i))
+            seal_external_outline_pt_y = start_point.y + (base_internal_rad_point + params.thickness*2 + base_build.base_tolerance) * np.sin(np.radians(bend.angle_intervals*i))
             seal_external_outline_pt = Point(seal_external_outline_pt_x, seal_external_outline_pt_y)
             seal_external_outline.append(seal_external_outline_pt)
             # create seal_clamp_outline_points
@@ -103,8 +105,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         min_x = helpers.find_min_x(twoD_cross_section_points)
         max_x = helpers.find_max_x(twoD_cross_section_points)
 
-        base_radius = abs(max_x - min_x) + baseline.revolve_offset + params.thickness + base_extension
-        base_internal_radius = base_radius - base_extension - baseline.cap_length - baseline.revolve_offset - params.thickness + baseline.base_tolerance
+        base_radius = abs(max_x - min_x) + baseline.revolve_offset + params.thickness + base_build.base_extension
+        base_internal_radius = base_radius - base_build.base_extension - baseline.cap_length - baseline.revolve_offset - params.thickness + base_build.base_tolerance
 
         # create base_radius outline points
         base_radius_outline = helpers.create_circle_of_radius(base_radius)
@@ -118,26 +120,34 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
 
     # Calculate screw placement geometry
     # Clamp and Seal
-    desired_diameter   = 2*base_radius - 2*(screw_tolerance/2 + outer_screw_tolerance)
-    desired_side_length= desired_diameter/np.sqrt(2)
+    base_diameter   = base_radius * 2
+    # print(f"Desired radius: {desired_radius}")
     # Foundation (Constant)
-    f_desired_diameter = 2 * base_build.foundation_radius - 2 * (screw_tolerance / 2 + base_build.f_outer_screw_tolerance)
-    f_desired_side_length = f_desired_diameter / np.sqrt(2)
+    # f_desired_diameter = 2*base_radius + (base_build.slide_length*2) - 2 * (screw_tolerance/2 + outer_screw_tolerance)
+    baseline_diameter = 2 * (base_build.baseline_geo_radius + base_build.base_extension + params.thickness)
+    desired_diameters = [baseline_diameter-base_build.slide_length*2, baseline_diameter, baseline_diameter+base_build.slide_length*2]
 
-    # Check a few geometry constraints (original logic)
-    vertex_distance = desired_side_length / np.sqrt(2)
-    if baseline.cap_length >= (vertex_distance - screw_radius) - (base_internal_radius + params.thickness):
-        raise ValueError("Invalid screw placement or cap length: conflict with screw placement. Adjust parameters.")
+    # print(f"Baseline diameter: {baseline_diameter}")
+
+    if base_diameter <= baseline_diameter - base_build.slide_length/2:
+        desired_diameter = desired_diameters[0]
+        print("Base 1 [min] used")
+    elif base_diameter >= baseline_diameter + base_build.slide_length/2:
+        desired_diameter = desired_diameters[2]
+        print("Base 3 [max] used")
+    else:
+        desired_diameter = desired_diameters[1]
+        print("Base 2 [std] used")
 
     jimstron_clamp_plate_width = 8
     jimstron_clamp_max_distance = 56
     clamp_screw_req_distance = screw_tolerance + jimstron_clamp_plate_width
-    if clamp_side_length > (desired_side_length - clamp_screw_req_distance):
-        max_clamp_side_length = desired_side_length - clamp_screw_req_distance
-        raise ValueError(f"Clamp side length blocks screws; max feasible = {max_clamp_side_length}")
-    elif clamp_side_length > (jimstron_clamp_max_distance - 2 * screw_tolerance):
-        max_clamp_side_length = jimstron_clamp_max_distance - 2 * screw_tolerance
-        raise ValueError(f"Clamp side length too large for jimstrun; max feasible = {max_clamp_side_length}")
+    # if clamp_side_length > (desired_diameter/2 - clamp_screw_req_distance):
+    #     max_clamp_side_length = desired_diameter/2 - clamp_screw_req_distance
+    #     raise ValueError(f"Clamp side length blocks screws; max feasible = {max_clamp_side_length}")
+    # elif clamp_side_length > (jimstron_clamp_max_distance - 2 * screw_tolerance):
+    #     max_clamp_side_length = jimstron_clamp_max_distance - 2 * screw_tolerance
+    #     raise ValueError(f"Clamp side length too large for jimstrun; max feasible = {max_clamp_side_length}")
 
     jimstron_max_depth = 80
     pneu_head_height = 25
@@ -148,54 +158,57 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     
     # print(f"Base radius: {base_radius}")
 
-    base0 = (
-        cq.Workplane("XZ")
-        # .circle(base_radius)
-        .polyline(base_radius_outline)
-        .close()
-        .extrude(base_plate_height)
-        # Screw holes
-        .faces(">Y")
-        .rect(desired_side_length, desired_side_length, forConstruction=True)
-        .vertices()
-        .circle(screw_radius*1.25)
-        .cutThruAll()
-        # Internal base plate
-        .faces(">Y")
-        .workplane()
-        # .circle(base_internal_radius)
-        .polyline(base_internal_radius_outline)
-        .close()
-        .extrude(base_internal_height * height_factor)
-        # The input hole
-        .faces("<Y")
-        .workplane()
-        .circle(base_input_radius)
-        .cutThruAll()
-        # Hollow walls
-        .faces(">Y")
-        .workplane()
-        .circle(base_internal_radius - wall_thickness)
-        .extrude(-base_internal_height, combine='cut')
-    )
+    # base0 = (
+    #     cq.Workplane("XZ")
+    #     # .circle(base_radius)
+    #     .polyline(base_radius_outline)
+    #     .close()
+    #     .extrude(base_plate_height)
+    #     # Screw holes
+    #     .faces(">Y")
+    #     # .rect(desired_side_length, desired_side_length, forConstruction=True)
+    #     # .vertices()
+    #     .polarArray(radius=desired_diameter/2, startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
+    #     .circle(screw_radius*1.25)
+    #     .cutThruAll()
+    #     # Internal base plate
+    #     .faces(">Y")
+    #     .workplane()
+    #     # .circle(base_internal_radius)
+    #     .polyline(base_internal_radius_outline)
+    #     .close()
+    #     .extrude(base_internal_height * height_factor)
+    #     # The input hole
+    #     .faces("<Y")
+    #     .workplane()
+    #     .circle(base_input_radius)
+    #     .cutThruAll()
+    #     # Hollow walls
+    #     .faces(">Y")
+    #     .workplane()
+    #     .circle(base_internal_radius - wall_thickness)
+    #     .extrude(-base_internal_height, combine='cut')
+    # )\
 
+    screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance)
+
+    # SEAL
     base1 = (
         cq.Workplane("XZ")
-        # .circle(base_radius)
-        .polyline(base_radius_outline)
-        .close()
+        .circle(desired_diameter/2)
+        # .polyline(base_radius_outline)
+        # .close()
         .extrude(base_plate_height, both=True)
         # Create the seal clamp
         .faces("<Y")
         .workplane()
         .polyline(seal_clamp_outline)
         .close()
-        .extrude(-(params.thickness * 2), combine='cut')
+        .extrude(-(params.thickness * 2 - base_build.squeeze_tolerance), combine='cut')
         # Cut screw holes
         .faces(">Y")
-        .rect(desired_side_length, desired_side_length, forConstruction=True)
-        .vertices()
-        .circle(screw_radius*1.25)
+        .polarArray(radius=screw_hole_diameter/2, startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
+        .circle(screw_radius*1.15)
         .cutThruAll()
         # Hollow the plate
         .faces(">Y")
@@ -209,13 +222,14 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     # Foundation (Constant)
     base2 = (
         cq.Workplane("XZ")
-        .circle(base_build.foundation_radius)
+        .circle(desired_diameter/2)
         .extrude(base_plate_height + 2)
         .translate((0, -base_internal_height*exploded_factor, 0))
         # Screw holes
         .faces(">Y")
-        .polarArray(radius=f_desired_diameter/2, startAngle=0, angle=360, count=4, rotate=True)
-        .slot2D(base_build.foundation_screw_slot, screw_radius*2, 0)
+        .polarArray(radius=(screw_hole_diameter/2), startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
+        # .slot2D(foundation_screw_slot, screw_radius*2, 0)
+        .circle(screw_radius*1.15)
         .cutThruAll()
         # The clamp
         .faces("<Y")
@@ -227,18 +241,17 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .workplane()
         .circle(base_input_radius)
         .cutThruAll()
-        .rotateAboutCenter((0, 1, 0), 45)
+        # .rotateAboutCenter((0, 1, 0), (180/base_build.no_screws))
     )
 
     base2 = base2.faces("<<Y[-2]").edges().fillet(5)
 
-    base = base0 + base1 + base2
+    base = base1 + base2
 
     return BaseComponents(
         base_exploded=base, 
         foundation=base2, 
-        seal=base1, 
-        clamp=base0
+        seal=base1
     )
 
 

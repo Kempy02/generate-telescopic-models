@@ -100,7 +100,7 @@ def generate_prototypes(
                 params=params,
                 xsection2D=report.xsections2d_list if params.bending_enabled else report.xsections2d
             )
-            export_components = ("foundation", "seal", "clamp", "base_exploded") if options.export_base_exploded_flag else ("foundation", "seal", "clamp")
+            export_components = ("foundation", "seal", "base_exploded") if options.export_base_exploded_flag else ("foundation", "seal")
             for comp_name in export_components:
                 export(
                     getattr(base_components, comp_name),
@@ -110,6 +110,18 @@ def generate_prototypes(
                     export_type="stl",
                     folder=base_export_folder,
                 )
+        
+        # ---- Optional: export exploded system
+        if getattr(run, "export_exploded_system", False):
+            exploded_system = report.model3d.threeD_model + base_components.base_exploded
+            export(
+                exploded_system,
+                title=f"{params.export_filename}_exploded_system",
+                overwrite=run.overwrite,
+                directory=run.directory,
+                export_type="stl",
+                folder=params.export_folder,
+            )
 
         # ---- Collect for grouped plotting
         if params.bending_enabled:
@@ -163,6 +175,7 @@ def main():
     run = RunOptions(
         export_model=True,
         export_bases=options.export_bases_flag,
+        export_exploded_system=True,
         plot_1d=True,
         plot_2d=True,
         plot_3d=True,

@@ -53,13 +53,13 @@ class BaseComponents:
     base_exploded: Any
     foundation: Any
     seal: Any
-    clamp: Any
 
 @dataclass
 class RunOptions:
     export_model: bool = True
     export_cross_sections: bool = False
     export_bases: bool = False
+    export_exploded_system: bool = False
     plot_1d: bool = False
     plot_2d: bool = False
     plot_3d: bool = False

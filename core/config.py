@@ -8,6 +8,7 @@ class optionsConfig:
     plot_curve_flag: bool = False
     export_base_exploded_flag: bool = True
     export_bases_flag: bool = True
+    export_exploded_system: bool = False
     export_crossSection_flag: bool = False
     export_model_flag: bool = True
     plot_prototypes_flag: bool = True
@@ -27,7 +28,6 @@ class BaselineGeometryConfig:
     n_curves: int = 5
     revolve_offset: float = 1.0
     loft_offset: float = 0.0
-    base_tolerance: float = 0.5
 
 @dataclass
 class NURBSConfig:
@@ -65,8 +65,12 @@ class BendSettings:
 
 @dataclass
 class BaseBuildSettings:
-    foundation_radius = 55.0
-    foundation_height = 5.0
-    foundation_screw_constant = 84.0
-    foundation_screw_slot = 15.0
-    f_outer_screw_tolerance = 10.0
+    foundation_radius: float = 48.0
+    base_tolerance: float = 0.5  # 0.5 mm
+    baseline_geo_radius: float = 35.25
+    base_extension: float = 15.0  # Extra length for the base beyond the main body
+    foundation_height: float = 5.0
+    slide_length: float = 3.0
+    f_screw_tolerance: float = 5.0
+    no_screws: int = 6
+    squeeze_tolerance: float = 0.2  # 0.2 mm
