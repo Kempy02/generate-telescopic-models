@@ -25,7 +25,7 @@ def create_3d_cap(thickness_factors, revolve_offset, y_translate, x_translate):
 
     return cap
 
-def create_3d_model(cross_section_points, thickness_factors, revolve_offset=1.0, revolve_angle=360):
+def create_3d_model(cross_section_points, thickness_factors, params: Params, revolve_offset=1.0, revolve_angle=360):
     """
     Revolve the 2D cross_section around the Y axis to form the actuator body,
     then add a top 'cap'.
@@ -48,7 +48,16 @@ def create_3d_model(cross_section_points, thickness_factors, revolve_offset=1.0,
     cap = create_3d_cap(thickness_factors, revolve_offset, y_translate, 0)
     final = profile + cap
 
-    # final = profile
+    # create keying feature at base
+    x_translate = abs(helpers.find_max_x(cross_section_points) - helpers.find_min_x(cross_section_points)) + revolve_offset
+    final = (
+        final
+        .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
+        .workplane()
+        .rect(params.thickness*2, params.thickness*2)
+        .extrude(baseline.keying_offset, both=True, combine="a")
+    )
+
     return final
 
 # -----------------------------------------
@@ -128,7 +137,14 @@ def create_3d_model_bending(
     profile = workplanes[-1].loft(ruled=True,combine="a")
     
     # create keying feature at base
-    profile = profile.faces(">X").workplane().rect(params.thickness*2, params.thickness*2).extrude(baseline.keying_offset, both=True, combine="a")
+    x_translate = abs(helpers.find_max_x(initial_pts) - helpers.find_min_x(initial_pts)) + loft_offset
+    profile = (
+        profile
+        .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
+        .workplane()
+        .rect(params.thickness*2, params.thickness*2)
+        .extrude(baseline.keying_offset, both=True, combine="s")
+    )
 
     if loft_offset > 0:
         cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)

@@ -28,7 +28,7 @@ class BaselineGeometryConfig:
     n_curves: int = 5
     revolve_offset: float = 1.0
     loft_offset: float = 0.0
-    keying_offset: float = 3.0
+    keying_offset: float = 2.0
 
 @dataclass
 class NURBSConfig:
