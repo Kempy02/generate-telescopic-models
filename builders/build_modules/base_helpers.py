@@ -129,15 +129,19 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     desired_diameters = [baseline_diameter-base_build.slide_length*2, baseline_diameter, baseline_diameter+base_build.slide_length*2]
 
     # Determine which base size to use
-    if base_diameter <= baseline_diameter - base_build.slide_length/2:
-        desired_diameter = desired_diameters[0]
-        print("Base 1 [min] used")
-    elif base_diameter >= baseline_diameter + base_build.slide_length/2:
-        desired_diameter = desired_diameters[2]
-        print("Base 3 [max] used")
+    if options.use_base is None:
+        if base_diameter <= baseline_diameter - base_build.slide_length/2:
+            desired_diameter = desired_diameters[0]
+            print("Base 1 [min] used")
+        elif base_diameter >= baseline_diameter + base_build.slide_length/2:
+            desired_diameter = desired_diameters[2]
+            print("Base 3 [max] used")
+        else:
+            desired_diameter = desired_diameters[1]
+            print("Base 2 [std] used")
     else:
-        desired_diameter = desired_diameters[1]
-        print("Base 2 [std] used")
+        desired_diameter = desired_diameters[options.use_base-1]
+        print(f"Base {options.use_base+1} used")
 
     # distance from center to screw holes
     screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance)
