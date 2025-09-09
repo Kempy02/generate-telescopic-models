@@ -6,6 +6,11 @@ from pytictoc import TicToc
 t = TicToc()
 
 import builders.build_modules.general_helpers as helpers
+from core.types import Params, Model3D
+
+from core.config import BaselineGeometryConfig
+baseline = BaselineGeometryConfig()
+# -----------------------------------------
 
 def create_3d_cap(thickness_factors, revolve_offset, y_translate, x_translate):
     # top cap
@@ -53,8 +58,9 @@ def create_3d_model(cross_section_points, thickness_factors, revolve_offset=1.0,
 def create_3d_model_bending(
         cross_sections: list[list[tuple[float, float]]],
         thickness_factors: list[list[float]],
+        params: Params,
         loft_offset: float = 0.0,
-        angular_section: float | None = None
+        angular_section: float | None = None,
     ):
     """
     Build a bending model from a list of 2D cross-sections and matching thickness factors.
@@ -120,7 +126,10 @@ def create_3d_model_bending(
     last_thickness_factors = thickness_factors[-1]
 
     profile = workplanes[-1].loft(ruled=True,combine="a")
-    # intersect_face = workplane_new.extrude(0.1,both=True)
+    
+    # create keying feature at base
+    profile = profile.faces(">X").workplane().rect(params.thickness*2, params.thickness*2).extrude(baseline.keying_offset, both=True, combine="a")
+
     if loft_offset > 0:
         cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)
         final = profile + cap

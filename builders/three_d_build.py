@@ -36,6 +36,7 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
             thickness_factors_list,
             loft_offset=params.center_offset,
             angular_section=angular_section,
+            params=params
         )
     else:
         model = create_3d_model(
