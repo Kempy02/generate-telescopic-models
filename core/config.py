@@ -8,6 +8,7 @@ class optionsConfig:
     plot_curve_flag: bool = False
     export_base_exploded_flag: bool = True
     export_bases_flag: bool = True
+    use_base: int = 2                        # 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
     export_model_flag: bool = True

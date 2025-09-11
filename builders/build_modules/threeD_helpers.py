@@ -143,7 +143,7 @@ def create_3d_model_bending(
         .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
         .workplane()
         .rect(params.thickness*2, params.thickness*2)
-        .extrude(baseline.keying_offset, both=True, combine="s")
+        .extrude(baseline.keying_offset, both=True, combine="a")
     )
 
     if loft_offset > 0:
