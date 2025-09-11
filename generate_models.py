@@ -14,6 +14,9 @@ from io_modules.plotting import (
 )
 from io_modules.read_csv import read_param_rows_csv
 
+from core.param_builder import build_params_from_config_csv
+from builders.build_modules.interpolate_bend import interpolate_bending_config_from_config
+
 from io_modules.write_output_csv import write_design_metrics_csv 
 
 from core.config import (
@@ -22,13 +25,13 @@ from core.config import (
     NURBSConfig,
     CurveSettings
 )
-from core.param_builder import build_params_from_row 
+# from core.param_builder import build_params_from_row 
 
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
 
-CSV_PATH = "datasets/test.csv"
-BENDING_CONFIGS_DIR = "datasets/bending_configs/"
+CSV_PATH = "datasets/test2.csv"
+# BENDING_CONFIGS_DIR = "datasets/bending_configs/"
 
 def generate_prototypes(
     csv_path: str,
@@ -42,32 +45,28 @@ def generate_prototypes(
 ) -> Dict[str, List[Dict[str, Any]]]:
 
     rows = read_param_rows_csv(csv_path)
-    plots_data: Dict[str, List[Dict[str, Any]]] = {}
+    plots_data, arc_length_by_id = {}, {}
     bucket = "_all"
-    arc_length_by_id: Dict[str, Optional[float]] = {}
 
-    for i, row in enumerate(rows, start=1):
-        # Build Params directly from CSV row (no GeometryParams default)
-        params, bending_csv_path = build_params_from_row(
-            row, baseline, bending_configs_dir=BENDING_CONFIGS_DIR
+    for i, top_row in enumerate(rows, start=1):
+        params, config_csv_path, use_linear_fast = build_params_from_config_csv(
+            top_row, baseline
         )
-
-        # Ensure export meta (CSV should already have these)
-        proto_id = params.export_filename
-        if not proto_id:
-            proto_id = f"row_{i}"
-            params.export_filename = proto_id
+        proto_id = params.export_filename or f"row_{i}"
+        params.export_filename = proto_id
         if not params.export_folder:
             params.export_folder = default_model_export_folder
 
         print(f"[{i}/{len(rows)}] Building {proto_id} "
-              f"{'(bending)' if params.bending_enabled else '(revolve)'}")
+              f"{'(linear-fast)' if use_linear_fast else '(bending)'}")
 
-        # ---- Build
-        if params.bending_enabled:
-            report = generate_geometry_bend(params, bending_csv_path, testing_mode=False)
-        else:
+        # --- Build
+        if use_linear_fast:
+            params.bending_enabled = False
             report = generate_geometry(params)
+        else:
+            params.bending_enabled = True
+            report = generate_geometry_bend(params, config_csv_path, testing_mode=False)
 
         # # ---- Save arc length metric
         if params.bending_enabled:
@@ -158,7 +157,7 @@ def generate_prototypes(
 
     if plots_data and getattr(run, "plot_2d", False):
         if any(e.get("section_idx", 0) > 0 for e in plots_data.get(bucket, [])):
-            fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True)
+            fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=12)
         else:
             fig2 = plot_twoD_xsection_by_model(plots_data)
         export_plot(fig2, title=twoD_plots_filename, export_type="png",

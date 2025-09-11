@@ -14,7 +14,7 @@ class optionsConfig:
     export_model_flag: bool = True
     plot_prototypes_flag: bool = True
     calculate_area_flag: bool = False
-    bending_enabled: bool = False
+    keying_feature: bool = True
 
 @dataclass
 class BaselineGeometryConfig:

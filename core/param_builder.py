@@ -1,96 +1,66 @@
 # core/param_builder.py
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Tuple
-import ast
-
+from typing import Dict, Any, Tuple, List, Optional
 from core.types import Params
-from core.config import BaselineGeometryConfig, optionsConfig
+from core.config import BaselineGeometryConfig
+from io_modules.read_csv import read_param_rows_csv
 
-def _parse_list(val: Any, default: List[float]) -> List[float]:
-    """Accept list or string like '[1, 1, 1]'; fall back to default."""
-    if val is None:
-        return list(default)
-    if isinstance(val, (list, tuple)):
-        return list(val)
-    if isinstance(val, str):
-        s = val.strip()
-        try:
-            out = ast.literal_eval(s)
-            if isinstance(out, (list, tuple)):
-                return list(out)
-        except Exception:
-            pass
-    return list(default)
+def _pick_angle0(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Return the row with angular_section == 0. If missing, take the smallest angle."""
+    rows2 = [dict(r) for r in rows if "angular_section" in r]
+    if not rows2:
+        raise ValueError("Config CSV must include at least one row with angular_section.")
+    for r in rows2:
+        r["angular_section"] = float(r["angular_section"])
+    rows2.sort(key=lambda r: r["angular_section"])
+    if rows2[0]["angular_section"] != 0.0:
+        # allow “closest to 0” as base if 0 not present
+        pass
+    return rows2[0]
 
-def _is_truthy_path(x: Any) -> bool:
-    if x is None:
-        return False
-    s = str(x).strip().strip('"').strip("'")
-    return s not in ("", "None", "none", "null")
-
-def build_params_from_row(
-    row: Dict[str, Any],
+def build_params_from_config_csv(
+    top_row: Dict[str, Any],
     baseline: BaselineGeometryConfig,
-    *,
-    bending_configs_dir: str = "datasets/bending_configs/",
-) -> Tuple[Params, Optional[str]]:
+) -> Tuple[Params, str, bool]:
     """
-    Build a Params object directly from a CSV row.
-    Any fields not present in the row are filled from simple defaults and config.
-    Returns (params, bending_csv_path or None).
+    Reads the per-model config CSV and builds a Params for the base (angle 0) row.
+    Returns: (params, config_csv_path, use_linear_fast)
     """
+    config_csv = str(top_row.get("config_csv") or "").strip().strip('"').strip("'")
+    if not config_csv:
+        raise ValueError("`config_csv` is required in the top-level CSV.")
 
-    # --- bending decision & path ---
-    bend_spec = row.get("bending_config")
-    bending_enabled = _is_truthy_path(bend_spec)
-    bending_csv_path = None
-    if bending_enabled:
-        fname = str(bend_spec).strip().strip('"').strip("'")
-        bending_csv_path = bending_configs_dir + fname
+    use_linear_fast = bool(top_row.get("use_linear_fast", False))
 
-    # --- core design fields (come from CSV, else sensible defaults) ---
-    amplitude0       = float(row.get("amplitude0", 20.0))
-    desired_radius   = float(row.get("desired_radius", 25.0))
-    period_factors   = _parse_list(row.get("period_factors"),   [1.0, 1.0, 1.0])
-    offset_factor_x  = float(row.get("offset_factor_x", 0.0))
-    mid_factor_x     = float(row.get("mid_factor_x", 0.0))
-    mid_factor_y     = float(row.get("mid_factor_y", 0.0))
-    min_y_positions  = _parse_list(row.get("min_y_positions"),  [0.0, 0.0, 0.0])
-    curve_weight     = float(row.get("curve_weight", 5.0))
-    # If weights not provided, keep your previous pattern that references curve_weight
-    weights          = _parse_list(row.get("weights"), [1.0, curve_weight, 1.0, curve_weight, 1.0])
-    thickness        = float(row.get("thickness", 1.0))
-    thickness_factor = _parse_list(row.get("thickness_factor"), [1.0, 1.0, 1.0])
+    rows = read_param_rows_csv(config_csv)
+    base = _pick_angle0(rows)
 
-    # --- meta / export ---
-    export_filename  = str(row.get("Prototype ID") or "model")
-    export_folder    = str(row.get("export_folder") or "prototype_models")
+    # Build Params from angle-0 row + required meta from the top CSV
+    export_filename = str(top_row.get("Prototype ID") or "").strip()
+    export_folder  = str(top_row.get("export_folder") or "prototype_models").strip()
 
-    # --- motion / angles (defaults come from config conventions) ---
-    revolve_angle    = float(row.get("revolve_angle", 360.0))
-    angular_section  = float(row.get("angular_section", 360.0))
-
-    # --- center offset depends on bending-or-not ---
-    center_offset    = baseline.loft_offset if bending_enabled else baseline.revolve_offset
-
+    # Fills in only the fields your builders actually use.
     params = Params(
-        amplitude0=amplitude0,
-        desired_radius=desired_radius,
-        period_factors=period_factors,
-        offset_factor_x=offset_factor_x,
-        mid_factor_x=mid_factor_x,
-        mid_factor_y=mid_factor_y,
-        min_y_positions=min_y_positions,
-        curve_weight=curve_weight,
-        weights=weights,
-        thickness=thickness,
-        thickness_factor=thickness_factor,
-        center_offset=center_offset,
-        export_filename=export_filename,
-        export_folder=export_folder,
-        bending_enabled=bending_enabled,
-        angular_section=angular_section,
-        revolve_angle=revolve_angle,
+        amplitude0       = float(base.get("amplitude0", 20.0)),
+        desired_radius   = float(base.get("desired_radius", 25.0)),
+        period_factors   = list(base.get("period_factors", [1.0,1.0,1.0])),
+        offset_factor_x  = float(base.get("offset_factor_x", 0.0)),
+        mid_factor_x     = float(base.get("mid_factor_x", 0.0)),
+        mid_factor_y     = float(base.get("mid_factor_y", 0.0)),
+        min_y_positions  = list(base.get("min_y_positions", [0,0,0])),
+        curve_weight     = float(base.get("curve_weight", 5.0)),
+        weights          = list(base.get("weights", [1.0, 5.0, 1.0, 5.0, 1.0])),
+        thickness        = float(base.get("thickness", 1.0)),
+        thickness_factor = base.get("thickness_factor", [1.0,1.0,1.0]),
+        center_offset    = baseline.revolve_offset,  # may switch below
+        export_filename  = export_filename,
+        export_folder    = export_folder,
+        bending_enabled  = (not use_linear_fast),
+        angular_section  = float(base.get("angular_section", 0.0)),
+        revolve_angle    = 360.0,
     )
 
-    return params, bending_csv_path
+    # center offset: revolve when linear_fast, else loft/bend
+    params.center_offset = baseline.revolve_offset if use_linear_fast else baseline.loft_offset
+    return params, config_csv, use_linear_fast
+
