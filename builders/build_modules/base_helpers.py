@@ -190,14 +190,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .rect(params.thickness*2, params.thickness*2)
         .extrude(baseline.keying_offset, both=True, combine="s")
         # explode base for visualisation
-        .translate((0, params.thickness*2*exploded_factor, 0))
+        .translate((0, params.thickness*exploded_factor, 0))
     )
-
-    # add key feature to seal
-    # base1 = base1.faces(">X").workplane().transformed(offset=cq.Vector(0, 0, -first_displacement)).faces().workplane().rect(params.thickness*2, params.thickness*2).extrude(baseline.keying_offset, combine=True)
-    # base1 = base1.faces(">X").workplane().rect(params.thickness*2, params.thickness*2).extrude(baseline.keying_offset, combine="s")
-    # base1 = base1.transformed(offset=cq.Vector(seal_clamp_outline[0][0], 0, 0)).faces().workplane().rect(params.thickness*2, params.thickness*2).extrude(baseline.keying_offset, combine="s")
-
 
     # Foundation (Constant)
     base2 = (
