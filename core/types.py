@@ -50,9 +50,11 @@ class Model3D:
 
 @dataclass
 class BaseComponents:
-    base_exploded: Any
-    foundation: Any
-    seal: Any
+    Base_Exploded: Any
+    Foundation: Any
+    Seal: Any
+    Clamp_Cutout: Any
+    base_used: Any
 
 @dataclass
 class RunOptions:

@@ -2,3 +2,6 @@ Prototype ID,export_folder,amplitude0,desired_radius,period_factors,offset_facto
 LINEAR1,prototype_models,20,25,"[1.0, 1.0, 1.0]",0,0,5,"[1.0, 1.0, 1.0]",1,None
 BENDING1,prototype_models,20,25,"[1.0, 1.0, 1.0]",0,0,5,"[1.0, 1.0, 1.0]",1,'bending5.csv'
 BENDING2,prototype_models,20,25,"[1.0, 1.0, 1.0]",0,0,5,"[1.0, 1.0, 1.0]",1,'bending3.csv'
+
+BENDING1,prototype_models,datasets/bending_configs/bending5.csv,False
+BENDING2,prototype_models,datasets/bending_configs/bending3.csv,False

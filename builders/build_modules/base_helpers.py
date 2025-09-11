@@ -129,15 +129,19 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     if options.use_base is None:
         if base_diameter <= baseline_diameter - base_build.slide_length/2:
             desired_diameter = desired_diameters[0]
+            base_used = 1
             print("Base 1 [min] used")
         elif base_diameter >= baseline_diameter + base_build.slide_length/2:
             desired_diameter = desired_diameters[2]
+            base_used = 3
             print("Base 3 [max] used")
         else:
             desired_diameter = desired_diameters[1]
+            base_used = 2
             print("Base 2 [std] used")
     else:
         desired_diameter = desired_diameters[options.use_base-1]
+        base_used = options.use_base + 1
         print(f"Base {options.use_base+1} used")
 
     # distance from center to screw holes
@@ -225,12 +229,31 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     # add fillets to foundation base
     base2 = base2.faces("<<Y[-2]").edges().fillet(5)
 
+    # create jimstron clamp cutout
+    jimstron_clamp_cutout = (
+        cq.Workplane("XZ")
+        # outer edge
+        .circle(desired_diameter/2)
+        .extrude(base_plate_height)
+        # inner edge
+        .faces("<Y")
+        .rect((clamp_side_length + 4), (clamp_side_length + 4))
+        .cutThruAll()
+        # screw holes
+        .faces(">Y")
+        .polarArray(radius=(screw_hole_diameter/2), startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
+        .circle(screw_radius*1.15)
+        .cutThruAll()
+    )
+
     base = base1 + base2
 
     return BaseComponents(
-        base_exploded=base, 
-        foundation=base2, 
-        seal=base1
+        Base_Exploded=base, 
+        Foundation=base2, 
+        Seal=base1,
+        Clamp_Cutout=jimstron_clamp_cutout,
+        base_used=base_used
     )
 
 

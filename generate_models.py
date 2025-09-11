@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from core.types import Params, RunOptions, BuildReport
 from core.generate_geometry import generate_geometry, generate_geometry_bend
+from core.param_builder import build_params_from_config_csv
 
 from io_modules.exporting import export, export_plot
 from io_modules.plotting import (
@@ -14,8 +15,8 @@ from io_modules.plotting import (
 )
 from io_modules.read_csv import read_param_rows_csv
 
-from core.param_builder import build_params_from_config_csv
 from builders.build_modules.interpolate_bend import interpolate_bending_config_from_config
+from builders.build_modules.base_helpers import create_base
 
 from io_modules.write_output_csv import write_design_metrics_csv 
 
@@ -25,7 +26,6 @@ from core.config import (
     NURBSConfig,
     CurveSettings
 )
-# from core.param_builder import build_params_from_row 
 
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
@@ -93,18 +93,17 @@ def generate_prototypes(
 
         # ---- Optional: export base components
         if getattr(run, "export_bases", False):
-            from builders.build_modules.base_helpers import create_base
             print("Generating Base Components...")
             base_components = create_base(
                 params=params,
                 xsection2D=report.xsections2d_list if params.bending_enabled else report.xsections2d
             )
-            export_components = ("foundation", "seal", "base_exploded") if options.export_base_exploded_flag else ("foundation", "seal")
+            export_components = ("Foundation", "Seal", "Clamp_Cutout", "Base_Exploded") if options.export_base_exploded_flag else ("Foundation", "Seal", "Clamp_Cutout")
             for comp_name in export_components:
                 export(
                     getattr(base_components, comp_name),
-                    title=f"{params.export_filename}_{comp_name}",
-                    overwrite=run.overwrite,
+                    title=f"{params.export_filename}_{comp_name}" if comp_name == "Seal" or comp_name == "Base_Exploded" else f"{comp_name}_{base_components.base_used}",
+                    overwrite=run.overwrite if comp_name == "Seal" or comp_name == "Base_Exploded" else False,
                     directory=run.directory,
                     export_type="stl",
                     folder=base_export_folder,
@@ -112,7 +111,7 @@ def generate_prototypes(
         
         # ---- Optional: export exploded system
         if getattr(run, "export_exploded_system", False):
-            exploded_system = report.model3d.threeD_model + base_components.base_exploded
+            exploded_system = report.model3d.threeD_model + base_components.Base_Exploded
             export(
                 exploded_system,
                 title=f"{params.export_filename}_exploded_system",
