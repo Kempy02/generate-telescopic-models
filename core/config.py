@@ -8,7 +8,7 @@ class optionsConfig:
     plot_curve_flag: bool = False
     export_base_exploded_flag: bool = True
     export_bases_flag: bool = True
-    use_base: int = None                      # 0 = auto, 1 = min, 2 = mid, 3 = max
+    use_base: int = 2                      # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
     export_model_flag: bool = True
@@ -20,7 +20,7 @@ class optionsConfig:
 class BaselineGeometryConfig:
     start_x: float = 0
     start_y: float = 0
-    cap_height: float = 5
+    cap_height: float = 1
     cap_length: float = 10
     upper_cap_length: float = 4
     cap_thickness: float = 1.0

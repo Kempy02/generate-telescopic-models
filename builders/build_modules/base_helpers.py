@@ -141,8 +141,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
             print("Base 2 [std] used")
     else:
         desired_diameter = desired_diameters[options.use_base-1]
-        base_used = options.use_base + 1
-        print(f"Base {options.use_base+1} used")
+        base_used = options.use_base
+        print(f"Base {options.use_base} used")
 
     # distance from center to screw holes
     screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance)
