@@ -103,7 +103,8 @@ def generate_prototypes(
                 export(
                     getattr(base_components, comp_name),
                     title=f"{params.export_filename}_{comp_name}" if comp_name == "Seal" or comp_name == "Base_Exploded" else f"{comp_name}_{base_components.base_used}",
-                    overwrite=run.overwrite if comp_name == "Seal" or comp_name == "Base_Exploded" else False,
+                    # overwrite=run.overwrite if comp_name == "Seal" or comp_name == "Base_Exploded" else False,
+                    overwrite=run.overwrite,
                     directory=run.directory,
                     export_type="stl",
                     folder=base_export_folder,
