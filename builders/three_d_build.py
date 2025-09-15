@@ -36,7 +36,8 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
             thickness_factors_list,
             loft_offset=params.center_offset,
             angular_section=angular_section,
-            params=params
+            params=params,
+            keying_enabled=options.keying_feature,
         )
     else:
         model = create_3d_model(
@@ -44,7 +45,8 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
             xsec.thickness_factors,
             revolve_offset=params.center_offset,
             revolve_angle=params.revolve_angle,
-            params=params
+            params=params,
+            keying_enabled=options.keying_feature,
         )
 
     return Model3D(threeD_model=model)

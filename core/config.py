@@ -8,13 +8,13 @@ class optionsConfig:
     plot_curve_flag: bool = False
     export_base_exploded_flag: bool = True
     export_bases_flag: bool = True
-    use_base: int = 2                      # 0 = auto, 1 = min, 2 = mid, 3 = max
+    use_base: int = None                     # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
     export_model_flag: bool = True
     plot_prototypes_flag: bool = True
     calculate_area_flag: bool = False
-    keying_feature: bool = True
+    keying_feature: bool = False
 
 @dataclass
 class BaselineGeometryConfig:

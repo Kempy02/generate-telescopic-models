@@ -25,7 +25,7 @@ def create_3d_cap(thickness_factors, revolve_offset, y_translate, x_translate):
 
     return cap
 
-def create_3d_model(cross_section_points, thickness_factors, params: Params, revolve_offset=1.0, revolve_angle=360):
+def create_3d_model(cross_section_points, thickness_factors, params: Params, revolve_offset=1.0, revolve_angle=360, keying_enabled=False):
     """
     Revolve the 2D cross_section around the Y axis to form the actuator body,
     then add a top 'cap'.
@@ -49,14 +49,17 @@ def create_3d_model(cross_section_points, thickness_factors, params: Params, rev
     final = profile + cap
 
     # create keying feature at base
-    x_translate = abs(helpers.find_max_x(cross_section_points) - helpers.find_min_x(cross_section_points)) + revolve_offset
-    final = (
-        final
-        .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
-        .workplane()
-        .rect(params.thickness*2, params.thickness*2)
-        .extrude(baseline.keying_offset, both=True, combine="a")
-    )
+    if keying_enabled:
+        x_translate = abs(helpers.find_max_x(cross_section_points) - helpers.find_min_x(cross_section_points)) + revolve_offset
+        final = (
+            final
+            .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
+            .workplane()
+            .rect(params.thickness*2, params.thickness*2)
+            .extrude(baseline.keying_offset, both=True, combine="a")
+        )
+    else:
+        final = final
 
     return final
 
@@ -70,6 +73,7 @@ def create_3d_model_bending(
         params: Params,
         loft_offset: float = 0.0,
         angular_section: float | None = None,
+        keying_enabled: bool = False,
     ):
     """
     Build a bending model from a list of 2D cross-sections and matching thickness factors.
@@ -134,17 +138,20 @@ def create_3d_model_bending(
     y_max = helpers.find_max_y(last_curve_points)
     last_thickness_factors = thickness_factors[-1]
 
-    profile = workplanes[-1].loft(ruled=True,combine="a")
+    profile = workplanes[-1].loft(combine=True, ruled=True)
     
     # create keying feature at base
-    x_translate = abs(helpers.find_max_x(initial_pts) - helpers.find_min_x(initial_pts)) + loft_offset
-    profile = (
-        profile
-        .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
-        .workplane()
-        .rect(params.thickness*2, params.thickness*2)
-        .extrude(baseline.keying_offset, both=True, combine="a")
-    )
+    if keying_enabled:
+        x_translate = abs(helpers.find_max_x(initial_pts) - helpers.find_min_x(initial_pts)) + loft_offset
+        profile = (
+            profile
+            .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
+            .workplane()
+            .rect(params.thickness*2, params.thickness*2)
+            .extrude(baseline.keying_offset, both=True, combine="a")
+        )
+    else:
+        profile = profile
 
     if loft_offset > 0:
         cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)
