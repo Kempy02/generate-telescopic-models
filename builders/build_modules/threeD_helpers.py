@@ -117,7 +117,7 @@ def create_3d_model_bending(
         # print(f"Increment {i}: x_length = {x}, y_length = {y}")
 
         # Get the current workplane
-        workplane_now = workplanes[i]
+        workplane_now = workplanes[i].faces().workplane()
 
         # Calculate the z and x offsets
         x_variance = calculate_x_inc_variance(x_len, x_prev)
@@ -131,7 +131,7 @@ def create_3d_model_bending(
 
         workplanes.append(workplane_new)
 
-        # print(f"completed increment {i+1}")
+        print(f"completed increment at angle {i+1 * angle}°")
 
     # Get the maximum y value for the cap
     last_curve_points = cross_sections[-1]
