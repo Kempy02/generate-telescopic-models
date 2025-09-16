@@ -131,7 +131,7 @@ def create_3d_model_bending(
 
         workplanes.append(workplane_new)
 
-        print(f"completed increment at angle {i+1 * angle}°")
+        # print(f"completed increment at angle {(i+1) * angle}°")
 
     # Get the maximum y value for the cap
     last_curve_points = cross_sections[-1]

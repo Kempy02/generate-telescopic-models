@@ -230,6 +230,12 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     base2 = base2.faces("<<Y[-2]").edges().fillet(5)
 
     # create jimstron clamp cutout
+
+    checkerboard_arm_length = 25
+    checkerboard_arm_width = 5
+    checkerboard_arm_height = 25
+    height_offset = 10
+
     jimstron_clamp_cutout = (
         cq.Workplane("XZ")
         # outer edge
@@ -244,7 +250,22 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .polarArray(radius=(screw_hole_diameter/2), startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
         .circle(screw_radius*1.15)
         .cutThruAll()
+        # add checkerboard holder face
+        .transformed(offset=(desired_diameter/2, 0, 0))
+        .rect(checkerboard_arm_width*3, checkerboard_arm_length*1.5)
+        .extrude(base_plate_height)
     )
+
+    checkerboard_holder = (
+        cq.Workplane("XZ")
+        .box((checkerboard_arm_width * 3), checkerboard_arm_length*1.5, (checkerboard_arm_height + base_plate_height + height_offset), centered=(True, True, False), combine=False)
+        .translate(((desired_diameter/2 + checkerboard_arm_width*3), 0, 0))
+        .faces("<Y")
+        .rect(checkerboard_arm_width, checkerboard_arm_length, centered=(True, True))
+        .extrude(-checkerboard_arm_height, combine="cut")
+    )
+
+    final = jimstron_clamp_cutout + checkerboard_holder
 
     base = base1 + base2
 
@@ -252,7 +273,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         Base_Exploded=base, 
         Foundation=base2, 
         Seal=base1,
-        Clamp_Cutout=jimstron_clamp_cutout,
+        Clamp_Cutout=final,
         base_used=base_used
     )
 

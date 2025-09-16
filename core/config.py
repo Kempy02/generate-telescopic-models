@@ -63,7 +63,7 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
-    angle_intervals: float = 5.0  # degrees between each workplane
+    angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass
 class BaseBuildSettings:

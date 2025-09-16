@@ -1,0 +1,10 @@
+name: create-datasets
+channels:
+  - conda-forge
+channel_priority: strict
+dependencies:
+  # Pick 3.10+
+  - python=3.10
+  - numpy
+  - pandas
+  - scipy

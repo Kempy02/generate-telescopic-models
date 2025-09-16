@@ -20,4 +20,12 @@ build/
 *.png
 
 # Ignore csv files
-*.csv
+*\_interp.csv
+
+# Ignore folder: ExRun0
+# ExRun0/
+
+# but do not ignore the directory or any file inside: 
+# [the ! operator negates the ignore rule]
+!keep_data/
+!keep_data/**

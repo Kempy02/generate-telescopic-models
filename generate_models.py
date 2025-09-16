@@ -30,8 +30,7 @@ from core.config import (
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
 
-CSV_PATH = "datasets/test2.csv"
-# BENDING_CONFIGS_DIR = "datasets/bending_configs/"
+CSV_PATH = "datasets/experiment0_dataset.csv"
 
 def generate_prototypes(
     csv_path: str,
