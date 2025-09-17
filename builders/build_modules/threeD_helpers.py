@@ -8,8 +8,9 @@ t = TicToc()
 import builders.build_modules.general_helpers as helpers
 from core.types import Params, Model3D
 
-from core.config import BaselineGeometryConfig
+from core.config import BaselineGeometryConfig, optionsConfig
 baseline = BaselineGeometryConfig()
+options = optionsConfig()
 # -----------------------------------------
 
 def create_3d_cap(thickness_factors, revolve_offset, y_translate, x_translate):
@@ -138,7 +139,7 @@ def create_3d_model_bending(
     y_max = helpers.find_max_y(last_curve_points)
     last_thickness_factors = thickness_factors[-1]
 
-    profile = workplanes[-1].loft(combine=True, ruled=True)
+    profile = workplanes[-1].loft(combine=True, ruled=options.ruled_flag)
     
     # create keying feature at base
     if keying_enabled:

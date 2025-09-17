@@ -192,11 +192,11 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .polyline(seal_internal_radius_outline)
         .close()
         .extrude(-base_plate_height*2, combine='cut')
-        # add key feature to seal
-        .transformed(offset=cq.Vector(seal_clamp_outline[0][0], 0, -(base_plate_height*2 - (base_plate_height-params.thickness-base_build.squeeze_tolerance))), rotate=cq.Vector(0,270,0))
-        .workplane()
-        .rect(params.thickness*2, params.thickness*2)
-        .extrude(baseline.keying_offset, both=True, combine="s")
+        # # add key feature to seal
+        # .transformed(offset=cq.Vector(seal_clamp_outline[0][0], 0, -(base_plate_height*2 - (base_plate_height-params.thickness-base_build.squeeze_tolerance))), rotate=cq.Vector(0,270,0))
+        # .workplane()
+        # .rect(params.thickness*2, params.thickness*2)
+        # .extrude(baseline.keying_offset, both=True, combine="s")
         # explode base for visualisation
         .translate((0, params.thickness*exploded_factor, 0))
     )
@@ -267,7 +267,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
 
     final = jimstron_clamp_cutout + checkerboard_holder
 
-    base = base1 + base2
+    base = base1 + base2 + final
 
     return BaseComponents(
         Base_Exploded=base, 

@@ -7,14 +7,16 @@ from typing import List, Tuple, Optional, Dict, Any
 class optionsConfig:
     plot_curve_flag: bool = False
     export_base_exploded_flag: bool = True
-    export_bases_flag: bool = True
-    use_base: int = None                     # 0 = auto, 1 = min, 2 = mid, 3 = max
+    export_bases_flag: bool = False
+    use_base: int = 2                     # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
     export_model_flag: bool = True
     plot_prototypes_flag: bool = True
+    test_2d_mode = False               # If True, only generate 2D cross-section (no 3D models - useful if failing to generate 3D)
     calculate_area_flag: bool = False
     keying_feature: bool = False
+    ruled_flag: bool = True             # Set True unless failing - If True, use ruled loft (straighter lines between sections), else smooth loft
 
 @dataclass
 class BaselineGeometryConfig:
@@ -22,7 +24,7 @@ class BaselineGeometryConfig:
     start_y: float = 0
     cap_height: float = 1
     cap_length: float = 10
-    upper_cap_length: float = 4
+    upper_cap_length: float = 3
     cap_thickness: float = 1.0
     cap_pts_ratio: float = 0.95
     inside_tolerance: float = 5
@@ -63,16 +65,18 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
+    total_angular_section: float = 360  # degrees
     angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass
 class BaseBuildSettings:
     foundation_radius: float = 48.0
-    base_tolerance: float = 0.5  # 0.5 mm
+    base_tolerance: float = 0.2  # 0.2 mm
     baseline_geo_radius: float = 35.25
     base_extension: float = 15.0  # Extra length for the base beyond the main body
     foundation_height: float = 5.0
     slide_length: float = 3.0
     f_screw_tolerance: float = 5.0
     no_screws: int = 6
-    squeeze_tolerance: float = 0.2  # 0.2 mm
+    squeeze_tolerance: float = 0.4  # 0.4 mm
+

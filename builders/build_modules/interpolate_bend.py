@@ -3,6 +3,9 @@ import csv, os, json
 from typing import List, Dict, Any
 from io_modules.read_csv import read_param_rows_csv
 
+from core.config import BendSettings
+bend = BendSettings()
+
 def interpolate_bending_config_from_config(input_csv_path: str,
                                            step_deg: float = 5.0,
                                            close_cycle: bool = True,
@@ -30,9 +33,9 @@ def interpolate_bending_config_from_config(input_csv_path: str,
         rows = [zero] + rows
 
     # ensure 360° (optional)
-    if close_cycle and rows[-1]["angular_section"] != 360.0:
+    if close_cycle and rows[-1]["angular_section"] != bend.total_angular_section:
         end = dict(rows[0])  # copy 0° values
-        end["angular_section"] = 360.0
+        end["angular_section"] = bend.total_angular_section
         rows.append(end)
 
     # interpolate

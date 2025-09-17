@@ -30,7 +30,8 @@ from core.config import (
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
 
-CSV_PATH = "datasets/experiment0_dataset.csv"
+# CSV_PATH = "datasets/experiment0_dataset.csv"
+CSV_PATH = "datasets/test.csv"
 
 def generate_prototypes(
     csv_path: str,
@@ -79,7 +80,7 @@ def generate_prototypes(
             arc_length_by_id[proto_id] = report.xsections2d.arc_length
 
         # ---- Export model
-        if run.export_model:
+        if run.export_model and not options.test_2d_mode:
             print(f"Exporting 3D Model as {run.ch_export_type}...")
             export(
                 report.model3d.threeD_model,
@@ -110,7 +111,7 @@ def generate_prototypes(
                 )
         
         # ---- Optional: export exploded system
-        if getattr(run, "export_exploded_system", False):
+        if getattr(run, "export_exploded_system", False) and getattr(run, "export_bases", False):
             exploded_system = report.model3d.threeD_model + base_components.Base_Exploded
             export(
                 exploded_system,
@@ -156,7 +157,7 @@ def generate_prototypes(
 
     if plots_data and getattr(run, "plot_2d", False):
         if any(e.get("section_idx", 0) > 0 for e in plots_data.get(bucket, [])):
-            fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=12)
+            fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=18)
         else:
             fig2 = plot_twoD_xsection_by_model(plots_data)
         export_plot(fig2, title=twoD_plots_filename, export_type="png",
@@ -172,7 +173,7 @@ def generate_prototypes(
 def main():
     run = RunOptions(
         export_model=True,
-        export_bases=options.export_bases_flag,
+        export_bases=True,
         export_exploded_system=True,
         plot_1d=True,
         plot_2d=True,

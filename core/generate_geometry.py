@@ -118,9 +118,12 @@ def generate_geometry_bend(params: Params, bending_csv_path: str, testing_mode: 
     # # Stop the timer
     # t.toc("Total build time:")
 
-    model_3d = generate_3D_model(xsections2d_list if not testing_mode else xsections2d_list[0],
-                                 params,
-                                 total_angular_section if not testing_mode else None)
+    if not options.test_2d_mode:
+        model_3d = generate_3D_model(xsections2d_list if not testing_mode else xsections2d_list[0],
+                                    params,
+                                    total_angular_section if not testing_mode else None)
+    else:
+        model_3d = None
     
     # Stop the timer
     t.toc("Total build time:")

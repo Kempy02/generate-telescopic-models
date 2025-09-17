@@ -11,7 +11,7 @@ from scipy.stats import qmc
 SEED = 42
 N_PROTOTYPES = 10
 P_BENDING = 0.5                     # fraction of prototypes that are bending
-EXPORT_FOLDER = "[prototype_models]"
+EXPORT_FOLDER = "prototype_models"
 MASTER_CSV_PATH = "datasets/experiment0_dataset.csv"
 CONFIG_DIR = "datasets/configs"
 os.makedirs(CONFIG_DIR, exist_ok=True)
@@ -28,8 +28,8 @@ ANGLE_SET_MODE = "cycle"   # "random" or "cycle"
 # Parameter bounds
 # ---------------------------
 PARAM_RANGES = {
-    "amplitude0":      (10, 30),   # fixed
-    "desired_radius":  (22, 28),
+    "amplitude0":      (10, 20),   # fixed
+    "desired_radius":  (22, 25),
     "offset_factor_x": (-0.7, 0.7),
     "mid_factor_x":    (-0.5, 0.5),
     "curve_weight":    (1.0, 10.0),
@@ -40,16 +40,16 @@ VEC_META = {
     # mode "sum3": elements renormalized to sum to 3
     "period_factors":   dict(lo=0.5, hi=1.5, m=3, mode="sum3"),
     # mode "mean1": elements renormalized to mean 1
-    "thickness_factor": dict(lo=0.5, hi=1.5, m=3, mode="mean1"),
+    "thickness_factor": dict(lo=0.5, hi=1.5, m=3, mode="mirror"),
 }
 
 # Per-angle step bounds (small deltas to avoid infeasible jumps)
 STEP_DELTA = {
-    "amplitude0":      5.0,
-    "desired_radius":  3.0,
+    "amplitude0":      0.0,
+    "desired_radius":  5.0,
     "offset_factor_x": 0.5,
     "mid_factor_x":    0.5,
-    "curve_weight":    3.0,
+    "curve_weight":    5.0,
     "thickness":       0.5,
 }
 VEC_STEP_DELTA = {
@@ -112,6 +112,18 @@ def _serialize_vector_with_constraint(vec: np.ndarray, mode: str) -> str:
             m = float(np.mean(v))
             v = (v / m) if m != 0 else v
             v = _round_vector(v)
+        elif mode == "mirror":
+            m = float(np.mean(v))
+            v = (v / m) if m != 0 else v
+            v = _round_vector(v)
+            # make the vector symmetric by replacing the last element with the first
+            lst = list(v)
+            if len(lst) >= 1:
+                first_val = lst[0]
+                lst.pop()          # remove last element
+                lst.append(first_val)
+            v = _round_vector(np.array(lst, dtype=float))
+
     return json.dumps([float(x) for x in v])
 
 # ---------------------------
