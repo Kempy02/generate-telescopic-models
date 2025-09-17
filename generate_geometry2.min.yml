@@ -1,0 +1,21 @@
+name: generate-geometry2
+channels:
+  - conda-forge
+  - nodefaults
+channel_priority: strict
+dependencies:
+  # Pick 3.10+
+  - python=3.10
+  - casadi
+  - cadquery=2.5.*
+  - numpy
+  - pandas
+  - shapely
+  - matplotlib
+  - ipython
+  - ffmpeg
+  # - jupyterlab
+  - pip
+  - pip:
+      - geomdl==5.3.1
+      - pytictoc
