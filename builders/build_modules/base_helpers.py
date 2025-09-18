@@ -243,7 +243,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .extrude(base_plate_height)
         # inner edge
         .faces("<Y")
-        .rect((clamp_side_length + 4), (clamp_side_length + 4))
+        # .rect((clamp_side_length + 4), (clamp_side_length + 4))
+        .circle(desired_diameter/2 - 18)
         .cutThruAll()
         # screw holes
         .faces(">Y")
