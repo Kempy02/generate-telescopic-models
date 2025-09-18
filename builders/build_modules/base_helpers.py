@@ -188,7 +188,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .cutThruAll()
         # Hollow the plate
         .faces(">Y")
-        .workplane()
+        .moveTo(0, 0)
         .polyline(seal_internal_radius_outline)
         .close()
         .extrude(-base_plate_height*2, combine='cut')
