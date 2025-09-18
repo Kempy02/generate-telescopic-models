@@ -253,7 +253,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .cutThruAll()
         # add checkerboard holder face
         .transformed(offset=(desired_diameter/2, 0, 0))
-        .rect(checkerboard_arm_width*3, checkerboard_arm_length*1.5)
+        .rect(checkerboard_arm_width*2, checkerboard_arm_length*1.5)
         .extrude(base_plate_height)
     )
 
@@ -262,7 +262,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .box((checkerboard_arm_width * 3), checkerboard_arm_length*1.5, (checkerboard_arm_height + base_plate_height + height_offset), centered=(True, True, False), combine=False)
         .translate(((desired_diameter/2 + checkerboard_arm_width*3), 0, 0))
         .faces("<Y")
-        .rect((checkerboard_arm_width*0.95), (checkerboard_arm_length*0.95), centered=(True, True))
+        .rect((checkerboard_arm_width*1.1), (checkerboard_arm_length*1.1), centered=(True, True))
         .extrude(-checkerboard_arm_height, combine="cut")
     )
 

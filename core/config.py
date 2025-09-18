@@ -78,5 +78,5 @@ class BaseBuildSettings:
     slide_length: float = 3.0
     f_screw_tolerance: float = 5.0
     no_screws: int = 6
-    squeeze_tolerance: float = 0.4  # 0.4 mm
+    squeeze_tolerance: float = 0.8  # 0.4 mm
 
