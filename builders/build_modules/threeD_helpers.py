@@ -8,15 +8,15 @@ t = TicToc()
 import builders.build_modules.general_helpers as helpers
 from core.types import Params, Model3D
 
-from core.config import BaselineGeometryConfig, optionsConfig
+from core.config import BaselineGeometryConfig, optionsConfig, BendSettings
 baseline = BaselineGeometryConfig()
 options = optionsConfig()
+bend = BendSettings()
 # -----------------------------------------
 
-def create_3d_cap(thickness_factors, revolve_offset, y_translate, x_translate):
+def create_3d_cap(revolve_offset, y_translate, x_translate):
     # top cap
-    thicknesses = np.concatenate(thickness_factors)
-    cap_thickness = thicknesses[-1] if len(thicknesses) > 0 else 1
+    cap_thickness = baseline.cap_thickness
     cap = (
         cq.Workplane("XZ")
         .circle(revolve_offset)
@@ -26,7 +26,7 @@ def create_3d_cap(thickness_factors, revolve_offset, y_translate, x_translate):
 
     return cap
 
-def create_3d_model(cross_section_points, thickness_factors, params: Params, revolve_offset=1.0, revolve_angle=360, keying_enabled=False):
+def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, keying_enabled=False):
     """
     Revolve the 2D cross_section around the Y axis to form the actuator body,
     then add a top 'cap'.
@@ -37,16 +37,18 @@ def create_3d_model(cross_section_points, thickness_factors, params: Params, rev
                .close()
                .edges()
                .revolve(
-                    angleDegrees=revolve_angle,
+                    angleDegrees=bend.total_angular_section,
                     axisStart=(revolve_offset, 0, 0),
                     axisEnd=(revolve_offset, 1, 0)
                 )
                 .translate((-revolve_offset, 0, 0))
     )
 
-    y_translate = helpers.find_max_y(cross_section_points)
+    max_x = helpers.find_max_x(cross_section_points)
+    points_max_x = [pt for pt in cross_section_points if math.isclose(pt[0], max_x, rel_tol=1e-9, abs_tol=1e-12)]
+    y_translate = helpers.find_max_y(points_max_x)
 
-    cap = create_3d_cap(thickness_factors, revolve_offset, y_translate, 0)
+    cap = create_3d_cap(params.thickness, revolve_offset, y_translate, 0)
     final = profile + cap
 
     # create keying feature at base
@@ -70,7 +72,6 @@ def create_3d_model(cross_section_points, thickness_factors, params: Params, rev
 
 def create_3d_model_bending(
         cross_sections: list[list[tuple[float, float]]],
-        thickness_factors: list[list[float]],
         params: Params,
         loft_offset: float = 0.0,
         angular_section: float | None = None,
@@ -137,7 +138,6 @@ def create_3d_model_bending(
     # Get the maximum y value for the cap
     last_curve_points = cross_sections[-1]
     y_max = helpers.find_max_y(last_curve_points)
-    last_thickness_factors = thickness_factors[-1]
 
     profile = workplanes[-1].loft(combine=True, ruled=options.ruled_flag)
     
@@ -155,7 +155,7 @@ def create_3d_model_bending(
         profile = profile
 
     if loft_offset > 0:
-        cap = create_3d_cap(last_thickness_factors, loft_offset, y_max, loft_offset)
+        cap = create_3d_cap(loft_offset, y_max, loft_offset)
         final = profile + cap
     else:
         final = profile

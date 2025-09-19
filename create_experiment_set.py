@@ -32,7 +32,7 @@ PARAM_RANGES = {
     "desired_radius":  (22, 25),
     "offset_factor_x": (-0.7, 0.7),
     "mid_factor_x":    (-0.5, 0.5),
-    "curve_weight":    (1.0, 10.0),
+    "curve_weight":    (5.0, 10.0),
     "thickness":       (0.5, 1.5),
 }
 

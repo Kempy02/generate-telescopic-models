@@ -56,8 +56,7 @@ def build_params_from_config_csv(
         export_filename  = export_filename,
         export_folder    = export_folder,
         bending_enabled  = (not use_linear_fast),
-        angular_section  = float(base.get("angular_section", 0.0)),
-        revolve_angle    = 360.0,
+        angular_section  = float(base.get("angular_section", 0.0))
     )
 
     # center offset: revolve when linear_fast, else loft/bend

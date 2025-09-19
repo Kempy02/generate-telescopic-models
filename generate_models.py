@@ -30,8 +30,8 @@ from core.config import (
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
 
-CSV_PATH = "datasets/experiment0_dataset.csv"
-# CSV_PATH = "datasets/test.csv"
+# CSV_PATH = "datasets/experiment0_dataset.csv"
+CSV_PATH = "datasets/test.csv"
 
 def generate_prototypes(
     csv_path: str,
@@ -173,8 +173,8 @@ def generate_prototypes(
 def main():
     run = RunOptions(
         export_model=True,
-        export_bases=True,
-        export_exploded_system=True,
+        export_bases=False,
+        export_exploded_system=False,
         plot_1d=True,
         plot_2d=True,
         plot_3d=True,

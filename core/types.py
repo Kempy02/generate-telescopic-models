@@ -23,8 +23,7 @@ class Params:
     export_folder: str
     bending_enabled: bool
     angular_section: float
-    revolve_angle: float
-
+    
 @dataclass
 class Curves1D:
     control_points: List[Point]

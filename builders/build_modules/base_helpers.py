@@ -66,7 +66,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
 
             base_rad_point = abs(max_x - min_x) + baseline.loft_offset + params.thickness + base_build.base_extension
             base_internal_rad_point = (abs(max_x - min_x) + baseline.loft_offset) - (baseline.cap_length + params.thickness) + base_build.base_tolerance
-            seal_internal_rad_point = (abs(max_x - min_x) + baseline.loft_offset) - (baseline.cap_length) + (params.thickness*2 + base_build.base_tolerance)
+            seal_internal_rad_point = (abs(max_x - min_x) + baseline.loft_offset) - (baseline.cap_length) + (params.thickness + base_build.base_tolerance)
 
             start_point = Point(0, 0)
 
@@ -86,8 +86,8 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
             seal_internal_outline_pt = Point(seal_internal_outline_pt_x, seal_internal_outline_pt_y)
             seal_internal_outline.append(seal_internal_outline_pt)
             # create seal_clamp_outline_points
-            seal_clamp_radius_pt_x = seal_internal_outline_pt_x + (baseline.cap_length - params.thickness) * np.cos(np.radians(bend.angle_intervals*i))
-            seal_clamp_radius_pt_y = seal_internal_outline_pt_y + (baseline.cap_length - params.thickness) * np.sin(np.radians(bend.angle_intervals*i))
+            seal_clamp_radius_pt_x = seal_internal_outline_pt_x + (baseline.cap_length) * np.cos(np.radians(bend.angle_intervals*i))
+            seal_clamp_radius_pt_y = seal_internal_outline_pt_y + (baseline.cap_length) * np.sin(np.radians(bend.angle_intervals*i))
             seal_clamp_radius_pt = Point(seal_clamp_radius_pt_x, seal_clamp_radius_pt_y)
             seal_clamp_outline.append(seal_clamp_radius_pt)
 
@@ -168,6 +168,9 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     if clamp_depth > clamp_max_depth:
         raise ValueError(f"Clamp depth is too large; max feasible = {clamp_max_depth}")
 
+    # print the thickness value being used
+    print(f"Base Thickness: {baseline.cap_thickness}mm")
+
     # SEAL
     base1 = (
         cq.Workplane("XZ")
@@ -180,7 +183,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .workplane()
         .polyline(seal_clamp_outline)
         .close()
-        .extrude(-(params.thickness * 2 - base_build.squeeze_tolerance), combine='cut')
+        .extrude(-(baseline.cap_thickness*2 - base_build.squeeze_tolerance), combine='cut')
         # Cut screw holes
         .faces(">Y")
         .polarArray(radius=screw_hole_diameter/2, startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
@@ -198,7 +201,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         # .rect(params.thickness*2, params.thickness*2)
         # .extrude(baseline.keying_offset, both=True, combine="s")
         # explode base for visualisation
-        .translate((0, params.thickness*exploded_factor, 0))
+        .translate((0, baseline.cap_thickness*exploded_factor, 0))
     )
 
     # Foundation (Constant)
@@ -206,7 +209,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         cq.Workplane("XZ")
         .circle(desired_diameter/2)
         .extrude(base_plate_height + 2)
-        .translate((0, -params.thickness*exploded_factor, 0))
+        .translate((0, -baseline.cap_thickness*exploded_factor, 0))
         # Screw holes
         .faces(">Y")
         .polarArray(radius=(screw_hole_diameter/2), startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
