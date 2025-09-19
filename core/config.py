@@ -65,7 +65,7 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
-    total_angular_section: float = 180.0  # degrees
+    total_angular_section: float = 360  # degrees
     angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass

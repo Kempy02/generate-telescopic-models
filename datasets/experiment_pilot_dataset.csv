@@ -1,0 +1,3 @@
+Prototype ID,export_folder,config_csv,use_linear_fast
+bending1,prototype_models,datasets/configs/bending1.csv,False
+bending8,prototype_models,datasets/configs/bending8.csv,False

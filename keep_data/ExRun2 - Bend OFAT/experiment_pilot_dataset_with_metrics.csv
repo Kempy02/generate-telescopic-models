@@ -1,0 +1,8 @@
+Prototype ID,export_folder,config_csv,use_linear_fast,arc_length
+bending1,prototype_models,datasets/configs/bending1.csv,False,131.363516
+bending2,prototype_models,datasets/configs/bending2.csv,False,130.830984
+bending3,prototype_models,datasets/configs/bending3.csv,False,139.510840
+bending4,prototype_models,datasets/configs/bending4.csv,False,130.050691
+bending6,prototype_models,datasets/configs/bending6.csv,False,139.148662
+bending7,prototype_models,datasets/configs/bending7.csv,False,139.476318
+bending8,prototype_models,datasets/configs/bending8.csv,False,131.860308

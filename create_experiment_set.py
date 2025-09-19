@@ -28,8 +28,8 @@ ANGLE_SET_MODE = "cycle"   # "random" or "cycle"
 # Parameter bounds
 # ---------------------------
 PARAM_RANGES = {
-    "amplitude0":      (10, 20),   # fixed
-    "desired_radius":  (22, 25),
+    "amplitude0":      (20, 20),   # fixed
+    "desired_radius":  (20, 25),
     "offset_factor_x": (-0.7, 0.7),
     "mid_factor_x":    (-0.5, 0.5),
     "curve_weight":    (5.0, 10.0),
