@@ -263,9 +263,9 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     checkerboard_holder = (
         cq.Workplane("XZ")
         .box((checkerboard_arm_width * 3), checkerboard_arm_length*1.5, (checkerboard_arm_height + base_plate_height + height_offset), centered=(True, True, False), combine=False)
-        .translate(((desired_diameter/2 + checkerboard_arm_width*3), 0, 0))
+        .translate(((desired_diameter/2 + checkerboard_arm_width*2), 0, 0))
         .faces("<Y")
-        .rect((checkerboard_arm_width*1.1), (checkerboard_arm_length*1.1), centered=(True, True))
+        .rect((checkerboard_arm_width*1.15), (checkerboard_arm_length*1.15), centered=(True, True))
         .extrude(-checkerboard_arm_height, combine="cut")
     )
 
