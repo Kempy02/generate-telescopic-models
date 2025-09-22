@@ -171,6 +171,9 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     # print the thickness value being used
     print(f"Base Thickness: {baseline.cap_thickness}mm")
 
+    # Create text for seal
+    seal_text = first_letter_and_number(params.export_filename)
+
     # SEAL
     base1 = (
         cq.Workplane("XZ")
@@ -195,14 +198,22 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .polyline(seal_internal_radius_outline)
         .close()
         .extrude(-base_plate_height*2, combine='cut')
-        # # add key feature to seal
+        # add key feature to seal
         # .transformed(offset=cq.Vector(seal_clamp_outline[0][0], 0, -(base_plate_height*2 - (base_plate_height-params.thickness-base_build.squeeze_tolerance))), rotate=cq.Vector(0,270,0))
         # .workplane()
         # .rect(params.thickness*2, params.thickness*2)
         # .extrude(baseline.keying_offset, both=True, combine="s")
-        # explode base for visualisation
+        # Add Engraving
+        .faces("<Y")
+        .transformed(offset=(0, screw_hole_diameter/2, 0), rotate=(0,0,180))
+        .text(seal_text, fontsize=6, distance=-1.0, cut=True, combine=True, kind='bold')
+        # translate for exploded view
         .translate((0, baseline.cap_thickness*exploded_factor, 0))
     )
+
+    # base1 = (
+    #     # 
+    # )
 
     # Foundation (Constant)
     base2 = (
@@ -281,10 +292,24 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         base_used=base_used
     )
 
+def first_letter_and_number(s: str) -> str:
+    """
+    Return the first alphabetic character (uppercased) concatenated with the first digit found in s.
+    Examples:
+        'BENDING1' -> 'B1'
+        'linear2'  -> 'L2'
+    Raises ValueError if no letter or no digit is present.
+    """
+    if not isinstance(s, str):
+        raise TypeError("Input must be a string")
+    letter = None
+    digit = None
+    for ch in s:
+        if letter is None and ch.isalpha():
+            letter = ch.upper()
+        if digit is None and ch.isdigit():
+            digit = ch
+        if letter is not None and digit is not None:
+            return f"{letter}{digit}"
+    raise ValueError("String must contain at least one letter and one digit")
 
-def create_fem_models(final, base_temp):
-    """
-    Example of combining final with a 'temp' base for FE analyses, etc.
-    """
-    fem_model = final + base_temp
-    return fem_model

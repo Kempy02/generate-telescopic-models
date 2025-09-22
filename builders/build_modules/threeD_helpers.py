@@ -32,6 +32,11 @@ def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, ke
     then add a top 'cap'.
     """
 
+    max_x = helpers.find_max_x(cross_section_points)
+    points_max_x = [pt for pt in cross_section_points if math.isclose(pt[0], max_x, rel_tol=1e-9, abs_tol=1e-12)]
+    y_translate = helpers.find_max_y(points_max_x)
+    x_translate = (max_x - helpers.find_min_x(cross_section_points)) + revolve_offset
+
     profile = (cq.Workplane("XY")
                .polyline(cross_section_points)
                .close()
@@ -44,25 +49,32 @@ def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, ke
                 .translate((-revolve_offset, 0, 0))
     )
 
-    max_x = helpers.find_max_x(cross_section_points)
-    points_max_x = [pt for pt in cross_section_points if math.isclose(pt[0], max_x, rel_tol=1e-9, abs_tol=1e-12)]
-    y_translate = helpers.find_max_y(points_max_x)
-
-    cap = create_3d_cap(params.thickness, revolve_offset, y_translate, 0)
-    final = profile + cap
+    # create text engraving
+    if options.engrave_text:
+        profile = (
+            profile.faces(">Y")
+            .transformed(offset=(0, baseline.cap_thickness*2, (x_translate-5)), rotate=(270, 0, 0))
+            .text("T1", fontsize=4, distance=-2.0, cut=True, combine=True, kind='bold')
+            # .un-transform
+            .transformed(offset=(0, 0, -(x_translate-5)), rotate=(-90, 0, 0))
+        )
 
     # create keying feature at base
     if keying_enabled:
-        x_translate = abs(helpers.find_max_x(cross_section_points) - helpers.find_min_x(cross_section_points)) + revolve_offset
-        final = (
-            final
+        profile = (
+            profile
             .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))
             .workplane()
             .rect(params.thickness*2, params.thickness*2)
             .extrude(baseline.keying_offset, both=True, combine="a")
+            # un-transform
+            .transformed(offset=cq.Vector(x_translate, 0, 0), rotate=cq.Vector(0,90,0))
         )
     else:
-        final = final
+        profile = profile
+
+    cap = create_3d_cap(revolve_offset, y_translate, 0)
+    final = profile + cap
 
     return final
 
