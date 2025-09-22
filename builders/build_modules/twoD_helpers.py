@@ -11,9 +11,11 @@ import builders.build_modules.general_helpers as helpers
 import builders.build_modules.thickness_distributions as thickness_distributions
 
 from core.config import (
-    BaselineGeometryConfig
+    BaselineGeometryConfig,
+    optionsConfig
 )
 baseline = BaselineGeometryConfig()
+options = optionsConfig()
 
 def process_outer_points(all_curve_points):
     """
@@ -107,9 +109,8 @@ def generate_2d_profile(outer_points, thicknesses, cap_thickness):
 
     point_buffers = []
     for (x,y), r in zip(outer_points, thicknesses):
-
         if x < baseline.cap_length and y < baseline.cap_height:
-            circle = Point(x, y).buffer(cap_thickness, resolution=32)
+            circle = Point(x, y).buffer(baseline.cap_thickness, resolution=32)
         elif x > (max_x - baseline.upper_cap_length):
             circle = Point(x, y).buffer(cap_thickness, resolution=32)
         else:

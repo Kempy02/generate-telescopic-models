@@ -5,14 +5,16 @@ from typing import Dict, Optional
 
 def write_design_metrics_csv(
     input_csv_path: str,
-    arc_length_by_id: Dict[str, float],
+    arc_length_min_by_id: Dict[str, float],
+    arc_length_max_by_id: Dict[str, float],
     out_csv_path: Optional[str] = None,
     id_col: str = "Prototype ID",
-    metric_col: str = "arc_length",
+    metric_col1: str = "arc_length_min",
+    metric_col2: str = "arc_length_max",
 ) -> str:
     """
     Read the input design CSV and write a new CSV with an extra column `metric_col`.
-    Values are pulled from `arc_length_by_id[id]` where `id` is the value in `id_col`.
+    Values are pulled from `arc_length_min_by_id[id]` and `arc_length_max_by_id[id]` where `id` is the value in `id_col`.
     Missing metrics are left blank.
     """
     # Decide output path
@@ -30,14 +32,19 @@ def write_design_metrics_csv(
         fieldnames = list(reader.fieldnames or [])
 
     # Ensure new column exists (append at end)
-    if metric_col not in fieldnames:
-        fieldnames.append(metric_col)
+    if metric_col1 not in fieldnames:
+        fieldnames.append(metric_col1)
+
+    if metric_col2 not in fieldnames:
+        fieldnames.append(metric_col2)
 
     # Fill metric
     for row in rows:
         pid = row.get(id_col, "")
-        val = arc_length_by_id.get(pid)
-        row[metric_col] = "" if val is None else f"{float(val):.6f}"
+        val = arc_length_min_by_id.get(pid)
+        row[metric_col1] = "" if val is None else f"{float(val):.6f}"
+        val = arc_length_max_by_id.get(pid)
+        row[metric_col2] = "" if val is None else f"{float(val):.6f}"
 
     # Write new CSV
     with open(out_csv_path, "w", newline="") as f_out:

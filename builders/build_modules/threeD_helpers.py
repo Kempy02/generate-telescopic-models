@@ -1,3 +1,5 @@
+# builders/build_modules/threeD_helpers.py
+
 import math
 import numpy as np
 import cadquery as cq
@@ -14,9 +16,8 @@ options = optionsConfig()
 bend = BendSettings()
 # -----------------------------------------
 
-def create_3d_cap(revolve_offset, y_translate, x_translate):
+def create_3d_cap(revolve_offset, y_translate, x_translate, cap_thickness):
     # top cap
-    cap_thickness = baseline.cap_thickness
     cap = (
         cq.Workplane("XZ")
         .circle(revolve_offset)
@@ -73,7 +74,8 @@ def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, ke
     else:
         profile = profile
 
-    cap = create_3d_cap(revolve_offset, y_translate, 0)
+    cap_thickness = baseline.cap_thickness if options.constant_cap_thickness else params.thickness
+    cap = create_3d_cap(revolve_offset, y_translate, 0, cap_thickness)
     final = profile + cap
 
     return final
@@ -91,7 +93,7 @@ def create_3d_model_bending(
     ):
     """
     Build a bending model from a list of 2D cross-sections and matching thickness factors.
-    cross_sections[0] is the base (0°), then subsequent entries for each increment.
+    cross_sections[0] is the base (0°), then subsequent entries for each angular increment.
     """
 
     # handle increments and angular_section
@@ -167,7 +169,8 @@ def create_3d_model_bending(
         profile = profile
 
     if loft_offset > 0:
-        cap = create_3d_cap(loft_offset, y_max, loft_offset)
+        cap_thickness = baseline.cap_thickness if options.constant_cap_thickness else params.thickness
+        cap = create_3d_cap(loft_offset, y_max, loft_offset, cap_thickness)
         final = profile + cap
     else:
         final = profile
@@ -180,30 +183,26 @@ def create_3d_model_bending(
 # calculate minimum offset for each increment
 def calculate_minimum_z_offset(inc_angle_deg, x_length, centre_offset):
     inc_angle_rad = math.radians(inc_angle_deg)
-    # z_min_offset = ((x_length + centre_offset) / 2) * math.sin(inc_angle_rad)
     z_min_offset = (centre_offset) * math.sin(inc_angle_rad)
     return z_min_offset
 
-# calculate minimum offset for each increment
-def calculate_z_offset(inc_angle_deg, x_variance, centre_offset):
-    inc_angle_rad = math.radians(inc_angle_deg)
-    # z_min_offset = ((x_length + centre_offset) / 2) * math.sin(inc_angle_rad)
-    z_offset = (centre_offset - x_variance) * math.sin(inc_angle_rad)
-    return z_offset
+# # calculate offset for each increment
+# def calculate_z_offset(inc_angle_deg, x_variance, centre_offset):
+#     inc_angle_rad = math.radians(inc_angle_deg)
+#     z_offset = (centre_offset - x_variance) * math.sin(inc_angle_rad)
+#     return z_offset
 
 # calculate minimum offset for each increment
 def calculate_minimum_x_offset(inc_angle_deg, x_length, centre_offset):
     inc_angle_rad = math.radians(inc_angle_deg)
-    # x_min_offset = ((x_length + centre_offset) / 2) * (1 - math.cos(inc_angle_rad))
     x_min_offset = (centre_offset) * (1 - math.cos(inc_angle_rad))
     return x_min_offset
 
-# calculate minimum offset for each increment
-def calculate_x_offset(inc_angle_deg, x_variance, centre_offset):
-    inc_angle_rad = math.radians(inc_angle_deg)
-    # x_min_offset = ((x_length + centre_offset) / 2) * (1 - math.cos(inc_angle_rad))
-    x_offset = (centre_offset - x_variance) * (1 - math.cos(inc_angle_rad))
-    return x_offset
+# # calculate offset for each increment
+# def calculate_x_offset(inc_angle_deg, x_variance, centre_offset):
+#     inc_angle_rad = math.radians(inc_angle_deg)
+#     x_offset = (centre_offset - x_variance) * (1 - math.cos(inc_angle_rad))
+#     return x_offset
 
 # calculate the angle for each increment 
 def calculate_angle(increments, angular_section):

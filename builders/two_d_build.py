@@ -13,11 +13,13 @@ from builders.build_modules.resample_points import resample_cross_section_points
 
 from core.config import (
     BaselineGeometryConfig,
-    ResampleSettings
+    ResampleSettings,
+    optionsConfig
 )
 
 baseline = BaselineGeometryConfig()
 resample = ResampleSettings()
+options = optionsConfig()
 
 def _build_thickness_factors(params: Params) -> List[List[float]]:
 
@@ -65,7 +67,7 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     twoD_cross_section = create_2d_cross_section_points(
         oneD_points=oneD_cross_section_points,
         point_thicknesses=point_thicknesses,
-        cap_thickness=baseline.cap_thickness
+        cap_thickness=baseline.cap_thickness if options.constant_cap_thickness else params.thickness
     )
 
     total = resample.resolution

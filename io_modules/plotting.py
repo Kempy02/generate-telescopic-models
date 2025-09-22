@@ -439,14 +439,20 @@ def plot_twoD_xsection_by_model_3d(
         n = len(series)
 
         # per-model angle increment; fallback to 0 (1 section) or 360
-        if n <= 1:
-            angle_incs = 0.0
-        else:
-            total_ang = next(
-                (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
-                360.0
-            )
-            angle_incs = float(total_ang) / float(n - 1)
+        # if n <= 1:
+        #     angle_incs = 0.0
+        # else:
+        #     total_ang = next(
+        #         (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
+        #         360.0
+        #     )
+        #     angle_incs = float(total_ang) / float(n - 1)
+
+        total_ang = next(
+            (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
+            360.0
+        )
+        angle_incs = float(total_ang) / float(n - 1)
 
         # keep: first, every Nth, (optionally) last
         keep_idx = set()

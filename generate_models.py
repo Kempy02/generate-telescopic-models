@@ -23,12 +23,15 @@ from io_modules.write_output_csv import write_design_metrics_csv
 from core.config import (
     optionsConfig,
     BaselineGeometryConfig,
-    NURBSConfig,
-    CurveSettings
+    BendSettings,
+    # NURBSConfig,
+    # CurveSettings
 )
 
 options = optionsConfig()
 baseline = BaselineGeometryConfig()
+bend = BendSettings()
+
 
 # CSV_PATH = "datasets/experiment_pilot_dataset.csv"
 # CSV_PATH = "datasets/experiment0_dataset.csv"
@@ -46,7 +49,7 @@ def generate_prototypes(
 ) -> Dict[str, List[Dict[str, Any]]]:
 
     rows = read_param_rows_csv(csv_path)
-    plots_data, arc_length_by_id = {}, {}
+    plots_data, arc_length_min_by_id, arc_length_max_by_id = {}, {}, {}
     bucket = "_all"
 
     for i, top_row in enumerate(rows, start=1):
@@ -76,9 +79,10 @@ def generate_prototypes(
                 arc_length_by_angle[f"{proto_id}_ang{idx}"] = xsec.arc_length
                 # Save max arc length for this prototype (ignore None values)
             lengths = [v for v in arc_length_by_angle.values()]
-            arc_length_by_id[proto_id] = max(lengths)
+            arc_length_min_by_id[proto_id] = min(lengths)
+            arc_length_max_by_id[proto_id] = max(lengths)
         else:
-            arc_length_by_id[proto_id] = report.xsections2d.arc_length
+            arc_length_min_by_id[proto_id] = arc_length_max_by_id[proto_id] = report.xsections2d.arc_length
 
         # ---- Export model
         if run.export_model and not options.test_2d_mode:
@@ -148,7 +152,7 @@ def generate_prototypes(
             })
 
     # ---- Write output metrics to CSV
-    write_design_metrics_csv(csv_path, arc_length_by_id)
+    write_design_metrics_csv(csv_path, arc_length_min_by_id, arc_length_max_by_id)
 
     # ---- Plot once at the end
     if plots_data and getattr(run, "plot_1d", False):
@@ -158,7 +162,7 @@ def generate_prototypes(
 
     if plots_data and getattr(run, "plot_2d", False):
         if any(e.get("section_idx", 0) > 0 for e in plots_data.get(bucket, [])):
-            fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=18)
+            fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=(bend.total_angular_section/bend.angle_intervals/2))
         else:
             fig2 = plot_twoD_xsection_by_model(plots_data)
         export_plot(fig2, title=twoD_plots_filename, export_type="png",
@@ -174,7 +178,7 @@ def generate_prototypes(
 def main():
     run = RunOptions(
         export_model=True,
-        export_bases=True,
+        export_bases=False,
         export_exploded_system=False,
         plot_1d=True,
         plot_2d=True,

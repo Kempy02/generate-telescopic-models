@@ -18,6 +18,7 @@ class optionsConfig:
     keying_feature: bool = False
     engrave_text: bool = True
     ruled_flag: bool = True             # Set True unless failing - If True, use ruled loft (straighter lines between sections), else smooth loft
+    constant_cap_thickness: bool = False  # If True, keep cap thickness constant, else scale with thickness factor
 
 @dataclass
 class BaselineGeometryConfig:
@@ -25,7 +26,7 @@ class BaselineGeometryConfig:
     start_y: float = 0
     cap_height: float = 1
     cap_length: float = 10
-    upper_cap_length: float = 2
+    upper_cap_length: float = 2.5
     cap_thickness: float = 1.0
     cap_pts_ratio: float = 0.95
     inside_tolerance: float = 5
@@ -67,7 +68,7 @@ class ResampleSettings:
 @dataclass
 class BendSettings:
     total_angular_section: float = 180  # degrees
-    angle_intervals: float = 10.0  # degrees between each workplane
+    angle_intervals: float = 5.0  # degrees between each workplane
 
 @dataclass
 class BaseBuildSettings:

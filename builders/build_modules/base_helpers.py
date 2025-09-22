@@ -169,7 +169,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         raise ValueError(f"Clamp depth is too large; max feasible = {clamp_max_depth}")
 
     # print the thickness value being used
-    print(f"Base Thickness: {baseline.cap_thickness}mm")
+    # print(f"Base Thickness: {baseline.cap_thickness}mm")
 
     # Create text for seal
     seal_text = first_letter_and_number(params.export_filename)
@@ -189,11 +189,14 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         .extrude(-(baseline.cap_thickness*2 - base_build.squeeze_tolerance), combine='cut')
         # Cut screw holes
         .faces(">Y")
+        .transformed(rotate=(0,0,-(base_build.no_screws/4 * (360/base_build.no_screws))))
         .polarArray(radius=screw_hole_diameter/2, startAngle=0, angle=360, count=base_build.no_screws, rotate=True)
         .circle(screw_radius*1.15)
         .cutThruAll()
         # Hollow the plate
+        # untransform
         .faces(">Y")
+        .transformed(rotate=(0,0,(base_build.no_screws/4 * (360/base_build.no_screws))))
         .moveTo(0, 0)
         .polyline(seal_internal_radius_outline)
         .close()
