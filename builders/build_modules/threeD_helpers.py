@@ -148,12 +148,13 @@ def create_3d_model_bending(
         workplanes.append(workplane_new)
 
         # print(f"completed increment at angle {(i+1) * angle}°")
+        
+    #  LOFT THE WORKPLANES TO FROM THE 3D PROFILE
+    profile = workplanes[-1].loft(combine=True, ruled=options.ruled_flag)
 
     # Get the maximum y value for the cap
     last_curve_points = cross_sections[-1]
     y_max = helpers.find_max_y(last_curve_points)
-
-    profile = workplanes[-1].loft(combine=True, ruled=options.ruled_flag)
     
     # create keying feature at base
     if keying_enabled:
