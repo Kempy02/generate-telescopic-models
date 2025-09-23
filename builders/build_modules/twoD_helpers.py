@@ -73,12 +73,18 @@ def generate_vt_control_points(all_control_points, control_points_idx):
 
 def apply_thickness(
     outer_points,
-    mode="variable",
+    mode,
     vt_control_points=None,
     all_thicknesses=None,
     constant_value=1.0,
     linear_start=1.0,
-    linear_end=2.0
+    linear_end=3.0,
+    # new delayed args:
+    delayed_start=0.10,
+    delayed_ramp=0.10,
+    delayed_end=0.10,
+    delayed_apply_sections=None,
+    delayed_baseline=(0.5, 1.0, 0.5),
 ):
     """
     Returns a thickness array for each point in outer_points, 
@@ -92,6 +98,17 @@ def apply_thickness(
         if vt_control_points is None or all_thicknesses is None:
             raise ValueError("For 'variable' mode, provide vt_control_points and all_thicknesses.")
         return thickness_distributions.variable_thd(outer_points, vt_control_points, all_thicknesses)
+    if mode == "delayed":
+        return thickness_distributions.variable_thd_delayed(
+            outer_points=outer_points,
+            vt_control_points=vt_control_points,
+            all_thicknesses=all_thicknesses,
+            apply_sections=delayed_apply_sections,
+            baseline_values=delayed_baseline,
+            start_frac=delayed_start,
+            ramp_frac=delayed_ramp,
+            end_frac=delayed_end
+        )
     else:
         raise ValueError(f"Unknown thickness mode: {mode}")
 
@@ -105,6 +122,7 @@ def generate_2d_profile(outer_points, thicknesses, cap_thickness):
     from shapely.geometry import Point
     from shapely.ops import unary_union
 
+    # Find the maximum x-coordinate among the outer points
     max_x = helpers.find_max_x(outer_points)
 
     point_buffers = []

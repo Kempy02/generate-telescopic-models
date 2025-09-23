@@ -79,3 +79,147 @@ def variable_thd(outer_points, vt_control_points, all_thicknesses):
         point_thicknesses.append(thickness_vals[-1])
 
     return point_thicknesses
+
+
+def _resample_list(vals, m):
+    m = int(m)
+    if m <= 0: return []
+    vals = [float(v) for v in vals]
+    if len(vals) == m: return vals
+    if len(vals) == 1: return [vals[0]] * m
+    x_old = np.linspace(0.0, 1.0, num=len(vals))
+    x_new = np.linspace(0.0, 1.0, num=m)
+    return np.interp(x_new, x_old, vals).tolist()
+
+def _map_cp_indices(outer_points, vt_control_points):
+    """Map each VT control point to nearest outer index, per segment; drop consecutive duplicates.
+       Anchor first CP to 0 and last CP to len(outer)-1 for coverage."""
+    vt_cp_array = np.vstack(vt_control_points)  # (total_cp, 2)
+    outer = np.asarray(outer_points, dtype=float)
+    # nearest index for each CP
+    cp_to_idx = []
+    for xcp, ycp in vt_cp_array:
+        d2 = np.sum((outer - (xcp, ycp))**2, axis=1)
+        cp_to_idx.append(int(np.argmin(d2)))
+
+    seg_indices, start = [], 0
+    for seg in vt_control_points:
+        seg_len = len(seg)
+        raw = cp_to_idx[start:start+seg_len]
+        uniq = []
+        for u in raw:
+            if not uniq or u != uniq[-1]:  # keep monotone indices
+                uniq.append(u)
+        seg_indices.append(uniq)
+        start += seg_len
+
+    if seg_indices:
+        seg_indices[0][0] = 0
+        seg_indices[-1][-1] = len(outer_points) - 1
+    return seg_indices
+
+def variable_thd_delayed(
+    outer_points,
+    vt_control_points,
+    all_thicknesses,
+    *,
+    apply_sections=None,               # e.g. [0,2,4] ; None => apply to all segments
+    baseline_values=(0.5, 1.0, 0.5),   # used on non-selected segments
+    start_frac=0.10,
+    ramp_frac=0.10,
+    end_frac=None                      # None => mirror start_frac
+):
+    """
+    For each CP-to-CP span [i0..i1]:
+      - hold v0 for 'start_frac' of the integer span,
+      - ramp v0->v1 for 'ramp_frac',
+      - hold v1 for 'end_frac' (defaults to start_frac).
+
+    All fractions are applied in *indices* so the effect is visible even on short spans.
+    Returns a list of len(outer_points).
+    """
+    n_outer = len(outer_points)
+    if n_outer == 0:
+        return []
+
+    # normalize fractions
+    start_frac = float(np.clip(start_frac, 0.0, 1.0))
+    ramp_frac  = float(max(0.0, ramp_frac))
+    if end_frac is None:
+        end_frac = start_frac
+    end_frac = float(np.clip(end_frac, 0.0, 1.0))
+
+    seg_indices = _map_cp_indices(outer_points, vt_control_points)
+
+    # which segments get the windowed profile
+    if apply_sections is None:
+        apply_set = set(range(len(seg_indices)))
+    else:
+        apply_set = set(int(s) for s in apply_sections)
+
+    out = np.empty(n_outer, dtype=float)
+    filled_to = 0  # how many entries already written
+
+    for seg_id, idxs in enumerate(seg_indices):
+        if len(idxs) < 2:
+            continue
+
+        # pick controls for this segment
+        if seg_id in apply_set:
+            ctrl = list(all_thicknesses[seg_id])
+            windowed = True
+        else:
+            # baseline [a,m,b] expanded to this segment's control count
+            ctrl = _resample_list(list(baseline_values), len(idxs))
+            windowed = False
+
+        if len(ctrl) != len(idxs):
+            ctrl = _resample_list(ctrl, len(idxs))
+
+        for j in range(len(idxs) - 1):
+            i0, i1 = idxs[j], idxs[j+1]
+            if i1 <= i0:
+                continue
+            span = i1 - i0  # number of edges; points are (span+1)
+
+            v0, v1 = float(ctrl[j]), float(ctrl[j+1])
+
+            if windowed:
+                # compute integer windows
+                hold0 = int(round(start_frac * (span)))
+                hold1 = int(round(end_frac   * (span)))
+                max_ramp_span = max(0, span - hold0 - hold1)
+                ramp_len = int(round(ramp_frac * span))
+                ramp_len = max(1, min(ramp_len, max_ramp_span)) if max_ramp_span > 0 else 0
+
+                k_start = i0 + hold0
+                k_rend  = k_start + ramp_len  # exclusive
+
+                # 1) hold v0
+                out[i0:k_start] = v0
+
+                # 2) ramp v0 -> v1
+                if ramp_len > 0:
+                    if ramp_len == 1:
+                        out[k_start:k_rend] = v1  # single step jump
+                    else:
+                        t = np.linspace(0.0, 1.0, num=ramp_len, endpoint=False)
+                        out[k_start:k_rend] = v0 + t * (v1 - v0)
+
+                # 3) hold v1
+                out[k_rend:i1] = v1
+
+            else:
+                # simple linear
+                t = np.linspace(0.0, 1.0, num=span, endpoint=False)
+                out[i0:i1] = v0 + t * (v1 - v0)
+
+        # include last control value at the final index
+        out[idxs[-1]] = float(ctrl[-1])
+        filled_to = max(filled_to, idxs[-1] + 1)
+
+    # fill any gaps (can occur if segs don’t cover everything)
+    if filled_to < n_outer:
+        out[filled_to:] = out[filled_to - 1] if filled_to > 0 else 1.0
+
+    return out.tolist()

@@ -33,8 +33,7 @@ baseline = BaselineGeometryConfig()
 bend = BendSettings()
 
 
-# CSV_PATH = "datasets/experiment_pilot_dataset.csv"
-# CSV_PATH = "datasets/experiment0_dataset.csv"
+# CSV_PATH = "datasets/experiment_set_bending1.csv"
 CSV_PATH = "datasets/test.csv"
 
 def generate_prototypes(
@@ -178,7 +177,7 @@ def generate_prototypes(
 def main():
     run = RunOptions(
         export_model=True,
-        export_bases=False,
+        export_bases=options.export_bases_flag,
         export_exploded_system=False,
         plot_1d=True,
         plot_2d=True,

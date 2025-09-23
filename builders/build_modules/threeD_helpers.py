@@ -10,6 +10,8 @@ t = TicToc()
 import builders.build_modules.general_helpers as helpers
 from core.types import Params, Model3D
 
+from io_modules.design_text import first_letter_and_number
+
 from core.config import BaselineGeometryConfig, optionsConfig, BendSettings
 baseline = BaselineGeometryConfig()
 options = optionsConfig()
@@ -52,10 +54,11 @@ def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, ke
 
     # create text engraving
     if options.engrave_text:
+        des_text = first_letter_and_number(params.export_filename)
         profile = (
             profile.faces(">Y")
             .transformed(offset=(0, baseline.cap_thickness*2, (x_translate-5)), rotate=(270, 0, 0))
-            .text("T1", fontsize=4, distance=-2.0, cut=True, combine=True, kind='bold')
+            .text(des_text, fontsize=4, distance=-2.0, cut=True, combine=True, kind='bold')
             # .un-transform
             .transformed(offset=(0, 0, -(x_translate-5)), rotate=(-90, 0, 0))
         )
@@ -150,15 +153,25 @@ def create_3d_model_bending(
         # print(f"completed increment at angle {(i+1) * angle}°")
         
     #  LOFT THE WORKPLANES TO FROM THE 3D PROFILE
-    profile = workplanes[-1].loft(combine=True, ruled=options.ruled_flag)
+    profile = workplanes[-1].loft(combine=True, ruled=options.ruled_flag, clean=False)
 
     # Get the maximum y value for the cap
     last_curve_points = cross_sections[-1]
     y_max = helpers.find_max_y(last_curve_points)
+    x_translate = abs(helpers.find_max_x(initial_pts) - helpers.find_min_x(initial_pts)) + loft_offset
+
+    # create text engraving
+    if options.engrave_text:
+        profile = (
+            profile.faces("<Y")
+            .transformed(offset=(0, -baseline.cap_thickness, (x_translate-5)), rotate=(270, 0, 0))
+            .text("B1", fontsize=10, distance=5.0, combine='a', kind='bold')
+            # .un-transform
+            .transformed(offset=(0, 0, -(x_translate-5)), rotate=(-90, 0, 0))
+        )
     
     # create keying feature at base
     if keying_enabled:
-        x_translate = abs(helpers.find_max_x(initial_pts) - helpers.find_min_x(initial_pts)) + loft_offset
         profile = (
             profile
             .transformed(offset=cq.Vector(-x_translate, 0, 0), rotate=cq.Vector(0,270,0))

@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Dict, Any
 class optionsConfig:
     plot_curve_flag: bool = True
     export_base_exploded_flag: bool = True
-    export_bases_flag: bool = False
+    export_bases_flag: bool = True
     use_base: int = 2                     # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
@@ -16,9 +16,13 @@ class optionsConfig:
     test_2d_mode = False              # If True, only generate 2D cross-section (no 3D models - useful if failing to generate 3D)
     calculate_area_flag: bool = False
     keying_feature: bool = False
-    engrave_text: bool = True
+    engrave_text: bool = False
     ruled_flag: bool = True             # Set True unless failing - If True, use ruled loft (straighter lines between sections), else smooth loft
-    constant_cap_thickness: bool = False  # If True, keep cap thickness constant, else scale with thickness factor
+    constant_cap_thickness: bool = True  # If True, keep cap thickness constant, else scale with thickness factor
+    thickness_mode: str = "variable"    # "constant", "linear", "variable", "delayed"
+    thickness_fast_mid: bool = True
+    thickness_fast_alpha: float = 0.5
+    thickness_slow_alpha: float = 2.0
 
 @dataclass
 class BaselineGeometryConfig:
@@ -67,8 +71,8 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
-    total_angular_section: float = 180  # degrees
-    angle_intervals: float = 5.0  # degrees between each workplane
+    total_angular_section: float = 360  # degrees
+    angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass
 class BaseBuildSettings:

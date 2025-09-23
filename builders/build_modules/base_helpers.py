@@ -8,6 +8,8 @@ from core.types import BaseComponents, Params, BuildReport, BuildReportBend
 
 import builders.build_modules.general_helpers as helpers
 
+from io_modules.design_text import first_letter_and_number
+
 from core.config import BaselineGeometryConfig, optionsConfig, BendSettings, BaseBuildSettings
 baseline = BaselineGeometryConfig()
 options = optionsConfig()
@@ -208,7 +210,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         # .extrude(baseline.keying_offset, both=True, combine="s")
         # Add Engraving
         .faces("<Y")
-        .transformed(offset=(0, screw_hole_diameter/2, 0), rotate=(0,0,180))
+        .transformed(offset=(screw_hole_diameter/2, screw_hole_diameter/2, 0), rotate=(0,0,(180)))
         .text(seal_text, fontsize=6, distance=-1.0, cut=True, combine=True, kind='bold')
         # translate for exploded view
         .translate((0, baseline.cap_thickness*exploded_factor, 0))
@@ -294,25 +296,4 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         Clamp_Cutout=final,
         base_used=base_used
     )
-
-def first_letter_and_number(s: str) -> str:
-    """
-    Return the first alphabetic character (uppercased) concatenated with the first digit found in s.
-    Examples:
-        'BENDING1' -> 'B1'
-        'linear2'  -> 'L2'
-    Raises ValueError if no letter or no digit is present.
-    """
-    if not isinstance(s, str):
-        raise TypeError("Input must be a string")
-    letter = None
-    digit = None
-    for ch in s:
-        if letter is None and ch.isalpha():
-            letter = ch.upper()
-        if digit is None and ch.isdigit():
-            digit = ch
-        if letter is not None and digit is not None:
-            return f"{letter}{digit}"
-    raise ValueError("String must contain at least one letter and one digit")
 
