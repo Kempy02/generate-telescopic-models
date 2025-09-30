@@ -113,7 +113,7 @@ def read_bending_factors_csv(csv_path: str) -> List[Dict[str, Any]]:
     """
     Expected headers (at minimum):
       angular_section, amplitude0, desired_radius, period_factors,
-      offset_factor_x, mid_factor_x, curve_weight, thickness_factor, thickness
+      offset_factor_x, mid_factor_x, curve_weight, thickness_factor, thickness_factor2, thickness, thickness_mode
     Returns a list of dicts, parsed and sorted by angular_section ascending.
     """
     rows: List[Dict[str, Any]] = []

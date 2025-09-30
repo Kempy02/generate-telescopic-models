@@ -1,106 +1,13 @@
-# geometry/plotting.py
-
-import math
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-
-from io_modules.exporting import export_plot
-
-def plot_curves(all_control_points, all_curve_points):
-    """Visualize the 1D cross‐section curves & control points."""
-    plt.close('all')
-    plt.figure(figsize=(10, 6))
-    plt.title('Sequential NURBS Curves')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.grid(True)
-
-    colors = ['b','g','r','c','m','y','k']
-
-    for i, curve_points in enumerate(all_curve_points):
-        color = colors[i % len(colors)]
-        xvals = curve_points[:,0]
-        yvals = curve_points[:,1]
-        plt.plot(xvals, yvals, label=f'Curve {i+1}', color=color)
-
-        # Control polygon
-        control_pts = all_control_points[i]
-        cp_x = [pt[0] for pt in control_pts]
-        cp_y = [pt[1] for pt in control_pts]
-        plt.plot(cp_x, cp_y, 'o--', label=f'Control {i+1}', color=color)
-
-    plt.legend(loc='center left', bbox_to_anchor=(1,0.5))
-    # plt.show()
-
-def plot_twoD_xsection(plot_data, plot_points=False, marker='o', markersize=3):
-    """
-    DEBUG VIEW: Plot the 2D cross-section for *all* models found in `plot_data`.
-    - Accepts your existing `plots_data` dict produced in generate_prototypes().
-    - Works whether you bucketed everything under "_all" or under multiple keys.
-    - Ignores which parameter varied; just plots cross_section_points for each model.
-    - plot_points: if True, draws a marker on each point (default False).
-    - marker / markersize: style for the plotted points.
-    Returns: matplotlib Figure
-    """
-
-    # Flatten all entries into one list
-    entries = []
-
-    if "_all" in plot_data:
-        entries.extend(plot_data["_all"])
-    else:
-        for _, lst in plot_data.items():
-            if isinstance(lst, list):
-                entries.extend(lst)
-
-    if not entries:
-        print("No cross-section data found to plot.")
-        return None
-
-    fig, ax = plt.subplots(figsize=(8, 8))
-
-    for entry in entries:
-        proto_id = entry.get("proto_id", "unknown")
-        cross_pts = entry.get("cross_section_points")
-
-        if not cross_pts:
-            # skip models that didn't produce a cross section
-            continue
-
-        # Original points for markers
-        x_pts = [pt[0] for pt in cross_pts]
-        y_pts = [pt[1] for pt in cross_pts]
-
-        # Create closed ring for the line plot if needed (but keep original pts for markers)
-        x_line = x_pts[:]
-        y_line = y_pts[:]
-        if cross_pts[0] != cross_pts[-1]:
-            x_line = x_line + [x_line[0]]
-            y_line = y_line + [y_line[0]]
-
-        # Draw the polyline and capture the color assigned
-        line, = ax.plot(x_line, y_line, '-', linewidth=1.0, label=proto_id)
-        line_color = line.get_color()
-
-        # Optionally draw markers on each original point
-        if plot_points:
-            ax.plot(x_pts, y_pts, linestyle='None', marker=marker, markersize=markersize, color=line_color)
-
-    ax.set_title("2D Cross Sections (all models)")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.grid(True, alpha=0.3)
-    ax.set_aspect('equal')  # geometry sanity!
-    ax.legend(loc="best", fontsize=8, ncol=1)
-
-    fig.tight_layout()
-    return fig
-
 # io_modules/plotting.py
+
 import re
 import math
 import matplotlib.pyplot as plt
+
+from io_modules.exporting import export_plot
+
+from core.config import BendSettings
+bend = BendSettings()
 
 _ANG_RE = re.compile(r"^(?P<model>.+?)_ang(?P<idx>\d+)$")
 
@@ -186,10 +93,7 @@ def plot_twoD_xsection_by_model(
         if n <= 1:
             angle_incs = 0.0
         else:
-            total_ang = next(
-                (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
-                360.0
-            )
+            total_ang = bend.total_angular_section
             angle_incs = float(total_ang) / float(n - 1)
 
         # keep: first, every Nth, (optionally) last
@@ -214,7 +118,7 @@ def plot_twoD_xsection_by_model(
             x_line = x_pts[:] + ([x_pts[0]] if not closed else [])
             y_line = y_pts[:] + ([y_pts[0]] if not closed else [])
 
-            label = f"{section_idx * angle_incs:.0f}°" if section_idx is not None else "sec ?"
+            label = f"{i * angle_incs:.0f}°" if section_idx is not None else "sec ?"
             line, = ax.plot(x_line, y_line, '-', linewidth=1.0, label=label)
             if plot_points:
                 ax.plot(x_pts, y_pts, linestyle='None', marker=marker, markersize=markersize, color=line.get_color())
@@ -323,11 +227,7 @@ def plot_grouped_curves_by_model(
         if n <= 1:
             angle_incs = 0.0
         else:
-            # pick the first non-None angular_section in this model's entries, else 360
-            total_ang = next(
-                (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
-                360.0
-            )
+            total_ang = bend.total_angular_section
             angle_incs = float(total_ang) / float(n - 1)
 
         # pick indices to keep (downsampling) ...
@@ -439,20 +339,11 @@ def plot_twoD_xsection_by_model_3d(
         n = len(series)
 
         # per-model angle increment; fallback to 0 (1 section) or 360
-        # if n <= 1:
-        #     angle_incs = 0.0
-        # else:
-        #     total_ang = next(
-        #         (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
-        #         360.0
-        #     )
-        #     angle_incs = float(total_ang) / float(n - 1)
-
-        total_ang = next(
-            (e.get("angular_section") for _, e in series if e.get("angular_section") is not None),
-            360.0
-        )
-        angle_incs = float(total_ang) / float(n - 1)
+        if n <= 1:
+            angle_incs = 0.0
+        else:
+            total_ang = bend.total_angular_section
+            angle_incs = float(total_ang) / float(n - 1)
 
         # keep: first, every Nth, (optionally) last
         keep_idx = set()

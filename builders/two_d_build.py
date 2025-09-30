@@ -55,15 +55,13 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     # Apply thickness to the outer points
     point_thicknesses = apply_thickness(
         outer_points=oneD_cross_section_points,
-        mode=options.thickness_mode,                         # new branch in apply_thickness
+        mode=params.thickness_mode,                         # new branch in apply_thickness
         vt_control_points=vt_control_points,
         all_thicknesses=thickness_factors,
-        delayed_start=0.350,                     # hold 10% at start
-        delayed_ramp=0.50,                      # ramp over next 10%
-        delayed_end=None,                       # None → mirror start (10%) at end
-        delayed_apply_sections=[0, 2, 4],       # only these segments get the windowed profile
-        # non-selected segments use simple linear baseline from (a,m,b):
-        delayed_baseline=(0.5, 0.5, 0.5)
+        thickness_factor1=params.thickness_factor,
+        thickness_factor2=params.thickness_factor2,
+        # For "delayed" thickness mode:
+        baseline_thickness=params.thickness
     )
     # Create the 2d cross-section
     twoD_cross_section = create_2d_cross_section_points(
@@ -78,5 +76,6 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     return CrossSections2D(
         twoD_cross_section=twoD_cross_section_resampled,
         thickness_factors=thickness_factors,
-        arc_length=arc_length
+        arc_length=arc_length,
+        thickness_value=params.thickness
     )

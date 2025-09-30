@@ -76,6 +76,8 @@ def apply_thickness(
     mode,
     vt_control_points=None,
     all_thicknesses=None,
+    thickness_factor1=None,
+    thickness_factor2=None,
     constant_value=1.0,
     linear_start=1.0,
     linear_end=3.0,
@@ -85,6 +87,7 @@ def apply_thickness(
     delayed_end=0.10,
     delayed_apply_sections=None,
     delayed_baseline=(0.5, 1.0, 0.5),
+    baseline_thickness=1.0,
 ):
     """
     Returns a thickness array for each point in outer_points, 
@@ -98,16 +101,28 @@ def apply_thickness(
         if vt_control_points is None or all_thicknesses is None:
             raise ValueError("For 'variable' mode, provide vt_control_points and all_thicknesses.")
         return thickness_distributions.variable_thd(outer_points, vt_control_points, all_thicknesses)
-    if mode == "delayed":
-        return thickness_distributions.variable_thd_delayed(
+    if mode == "collapsed":
+        return thickness_distributions.variable_thd_collapsed(
             outer_points=outer_points,
             vt_control_points=vt_control_points,
             all_thicknesses=all_thicknesses,
-            apply_sections=delayed_apply_sections,
-            baseline_values=delayed_baseline,
-            start_frac=delayed_start,
-            ramp_frac=delayed_ramp,
-            end_frac=delayed_end
+            apply_sections=[0, 2, 4],
+            baseline_values=thickness_factor2,
+            baseline_thickness=baseline_thickness,
+            start_frac=0.350,
+            ramp_frac=0.50,
+            end_frac=None                 # hold 10% at start
+        )
+    if mode == "sbend":
+        return thickness_distributions.variable_thd_sbend(
+            outer_points=outer_points,
+            vt_control_points=vt_control_points,  # list of segments, each a list of CPs
+            baseline_thickness=baseline_thickness,
+            profile1=thickness_factor1,             # apply to chosen segments
+            sections1=[0, 1, 2],
+            profile2=thickness_factor2,           # optional second style
+            sections2=[3, 4, 5, 6],                         # takes precedence if overlaps with sections1
+            default_profile=(1.0, 1.0, 1.0)        # used on any segment not listed above
         )
     else:
         raise ValueError(f"Unknown thickness mode: {mode}")

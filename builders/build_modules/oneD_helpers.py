@@ -26,7 +26,7 @@ def validate_parameters(
         raise ValueError(f"Length of min_y_positions must be at least {n_descending_curves + 1}")
     elif len(min_y_positions) > n_descending_curves + 1:
         min_y_positions = min_y_positions[:n_descending_curves + 1]
-        print(f"Warning: min_y_positions had extra entries. Trimmed to {len(min_y_positions)}.")
+        # print(f"Warning: min_y_positions had extra entries. Trimmed to {len(min_y_positions)}.")
 
     # 2) Validate & trim period_factors
     if len(period_factors) < n_periods:

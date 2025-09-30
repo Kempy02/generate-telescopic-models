@@ -53,6 +53,7 @@ def generate_1D_curves(params: Params) -> Curves1D:
     curve_weight     = params.curve_weight
     thickness        = params.thickness
     thickness_factor = params.thickness_factor
+    thickness_factor2= params.thickness_factor2
     export_filename  = params.export_filename
     export_folder    = params.export_folder
     center_offset    = params.center_offset

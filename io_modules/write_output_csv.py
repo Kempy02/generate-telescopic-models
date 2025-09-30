@@ -7,10 +7,16 @@ def write_design_metrics_csv(
     input_csv_path: str,
     arc_length_min_by_id: Dict[str, float],
     arc_length_max_by_id: Dict[str, float],
+    thickness_min_by_id: Dict[str, float],
+    thickness_max_by_id: Dict[str, float],
     out_csv_path: Optional[str] = None,
     id_col: str = "Prototype ID",
     metric_col1: str = "arc_length_min",
     metric_col2: str = "arc_length_max",
+    metric_col3: str = "arc_length_ratio",
+    metric_col4: str = "thickness_min",
+    metric_col5: str = "thickness_max",
+    metric_col6: str = "thickness_ratio"
 ) -> str:
     """
     Read the input design CSV and write a new CSV with an extra column `metric_col`.
@@ -38,6 +44,18 @@ def write_design_metrics_csv(
     if metric_col2 not in fieldnames:
         fieldnames.append(metric_col2)
 
+    if metric_col3 not in fieldnames:
+        fieldnames.append(metric_col3)
+
+    if metric_col4 not in fieldnames:
+        fieldnames.append(metric_col4)
+
+    if metric_col5 not in fieldnames:
+        fieldnames.append(metric_col5)
+
+    if metric_col6 not in fieldnames:
+        fieldnames.append(metric_col6)
+
     # Fill metric
     for row in rows:
         pid = row.get(id_col, "")
@@ -45,6 +63,28 @@ def write_design_metrics_csv(
         row[metric_col1] = "" if val is None else f"{float(val):.6f}"
         val = arc_length_max_by_id.get(pid)
         row[metric_col2] = "" if val is None else f"{float(val):.6f}"
+        if row[metric_col1] and row[metric_col2]:
+            try:
+                ratio = max((float(row[metric_col1]) / float(row[metric_col2])), 
+                            (float(row[metric_col2]) / float(row[metric_col1])))
+                row[metric_col3] = f"{ratio:.6f}"
+            except ZeroDivisionError:
+                row[metric_col3] = ""
+        else:
+            row[metric_col3] = ""
+        val = thickness_min_by_id.get(pid)
+        row[metric_col4] = "" if val is None else f"{float(val):.6f}"
+        val = thickness_max_by_id.get(pid)
+        row[metric_col5] = "" if val is None else f"{float(val):.6f}"
+        if row[metric_col4] and row[metric_col5]:
+            try:
+                ratio = max((float(row[metric_col4]) / float(row[metric_col5])), 
+                            (float(row[metric_col5]) / float(row[metric_col4])))
+                row[metric_col6] = f"{ratio:.6f}"
+            except ZeroDivisionError:
+                row[metric_col6] = ""
+        else:
+            row[metric_col6] = ""
 
     # Write new CSV
     with open(out_csv_path, "w", newline="") as f_out:

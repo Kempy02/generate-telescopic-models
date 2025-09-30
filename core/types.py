@@ -18,6 +18,8 @@ class Params:
     weights: List[float]
     thickness: float
     thickness_factor: Any
+    thickness_factor2: Any
+    thickness_mode: str
     center_offset: float
     export_filename: str
     export_folder: str
@@ -36,6 +38,7 @@ class CrossSections2D:
     twoD_cross_section: List[Point]
     thickness_factors: List[List[float]]
     arc_length: float
+    thickness_value: float
 
 @dataclass
 class BendingSections:
