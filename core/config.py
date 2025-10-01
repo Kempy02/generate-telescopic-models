@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Dict, Any
 class optionsConfig:
     plot_curve_flag: bool = True
     export_base_exploded_flag: bool = True
-    export_bases_flag: bool = True
+    export_bases_flag: bool = False
     use_base: int = 2                     # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
@@ -69,7 +69,7 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
-    total_angular_section: float = 360  # degrees
+    total_angular_section: float = 90  # degrees
     angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass

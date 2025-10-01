@@ -325,4 +325,7 @@ def variable_thd_sbend(
     # cap thickness is the first thickness value
     cap_thickness = float(point_thicknesses[0]) if point_thicknesses else baseline_thickness
 
+    # print list of thicknesses
+    # print("\n Thicknesses:", point_thicknesses)
+
     return point_thicknesses, cap_thickness

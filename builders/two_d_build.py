@@ -24,7 +24,7 @@ options = optionsConfig()
 def _build_thickness_factors(params: Params) -> List[List[float]]:
 
     thickness_factors: List[List[float]] = []
-    thickness_factor_cap = [1.0, 1.0]
+    thickness_factor_cap = [baseline.cap_thickness, baseline.cap_thickness]
     thickness_factors.append(thickness_factor_cap)
 
     for i in range(int(params.n_curves)):
@@ -32,7 +32,7 @@ def _build_thickness_factors(params: Params) -> List[List[float]]:
         if i < int(params.n_curves) - 1:
             thickness_factors.append(tf)
         else:
-            tf[-1] = params.cap_thickness
+            tf[-1] = baseline.cap_thickness
         thickness_factors.append(tf)
 
 
@@ -52,15 +52,20 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     # Build thickness factors
     thickness_factors = _build_thickness_factors(params)
 
+    # set cap_thickness option (based on thickness_mode)
+    if params.thickness_mode == "sbend":
+        options.constant_cap_thickness = False
+    else:
+        options.constant_cap_thickness = options.constant_cap_thickness
+
     # Apply thickness to the outer points
     point_thicknesses, cap_thickness = apply_thickness(
         outer_points=oneD_cross_section_points,
-        mode=params.thickness_mode,                         # new branch in apply_thickness
+        mode=params.thickness_mode,                         
         vt_control_points=vt_control_points,
         all_thicknesses=thickness_factors,
         thickness_factor1=params.thickness_factor,
         thickness_factor2=params.thickness_factor2,
-        # For "delayed" thickness mode:
         baseline_thickness=params.thickness
     )
     # Create the 2d cross-section
