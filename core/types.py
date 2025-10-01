@@ -20,11 +20,13 @@ class Params:
     thickness_factor: Any
     thickness_factor2: Any
     thickness_mode: str
+    cap_thickness: float
     center_offset: float
     export_filename: str
     export_folder: str
     bending_enabled: bool
     angular_section: float
+    n_curves: int
     
 @dataclass
 class Curves1D:
@@ -39,6 +41,7 @@ class CrossSections2D:
     thickness_factors: List[List[float]]
     arc_length: float
     thickness_value: float
+    cap_thickness: float
 
 @dataclass
 class BendingSections:

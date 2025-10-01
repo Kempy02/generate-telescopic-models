@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Dict, Any
 class optionsConfig:
     plot_curve_flag: bool = True
     export_base_exploded_flag: bool = True
-    export_bases_flag: bool = False
+    export_bases_flag: bool = True
     use_base: int = 2                     # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
@@ -18,7 +18,7 @@ class optionsConfig:
     keying_feature: bool = False        # If True, add keying features to the sections
     engrave_text: bool = False          # If True, engrave text on the sections
     ruled_flag: bool = True             # Set True unless failing - If True, use ruled loft (straighter lines between sections), else smooth loft
-    constant_cap_thickness: bool = True  # If True, keep cap thickness constant, else scale with thickness value
+    constant_cap_thickness: bool = False  # If True, keep cap thickness constant, else scale with thickness value
     thickness_mode: str = "sbend"    # "constant", "linear", "variable", "collapsed"
     default_thickness_factors: List[float] = field(default_factory=lambda: [0.5, 0.25, 0.5])
 
@@ -32,7 +32,7 @@ class BaselineGeometryConfig:
     cap_thickness: float = 1.0
     cap_pts_ratio: float = 0.95
     inside_tolerance: float = 5
-    n_curves: int = 7
+    n_curves: int = 5
     revolve_offset: float = 1.0
     loft_offset: float = 0.0
     keying_offset: float = 2.0

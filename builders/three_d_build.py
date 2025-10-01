@@ -29,7 +29,10 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
 
         # Extract 2D sections and thickness factors as lists
         cross_sections = [xs.twoD_cross_section for xs in xsec]
-        thickness_factors_list = [xs.thickness_factors for xs in xsec]
+        thickness_factors_list = [xs.thickness_factors for xs in xsec] 
+
+        # Extract cap thicknesses
+        cap_thicknesses = [xs.cap_thickness for xs in xsec]
 
         model = create_3d_model_bending(
             cross_sections,
@@ -37,6 +40,7 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
             angular_section=angular_section,
             params=params,
             keying_enabled=options.keying_feature,
+            cap_thickness=cap_thicknesses[0] if not options.constant_cap_thickness else baseline.cap_thickness
         )
     else:
         model = create_3d_model(
@@ -44,6 +48,7 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
             revolve_offset=params.center_offset,
             params=params,
             keying_enabled=options.keying_feature,
+            cap_thickness=cap_thicknesses[0] if not options.constant_cap_thickness else baseline.cap_thickness
         )
 
     return Model3D(threeD_model=model)

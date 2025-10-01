@@ -27,12 +27,12 @@ def _build_thickness_factors(params: Params) -> List[List[float]]:
     thickness_factor_cap = [1.0, 1.0]
     thickness_factors.append(thickness_factor_cap)
 
-    for i in range(baseline.n_curves):
+    for i in range(int(params.n_curves)):
         tf = handle_thickness_factor(params.thickness_factor)
-        if i < baseline.n_curves - 1:
+        if i < int(params.n_curves) - 1:
             thickness_factors.append(tf)
         else:
-            tf[-1] = 1.0 # ensure final value is 1.0
+            tf[-1] = params.cap_thickness
         thickness_factors.append(tf)
 
 
@@ -53,7 +53,7 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     thickness_factors = _build_thickness_factors(params)
 
     # Apply thickness to the outer points
-    point_thicknesses = apply_thickness(
+    point_thicknesses, cap_thickness = apply_thickness(
         outer_points=oneD_cross_section_points,
         mode=params.thickness_mode,                         # new branch in apply_thickness
         vt_control_points=vt_control_points,
@@ -67,7 +67,7 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
     twoD_cross_section = create_2d_cross_section_points(
         oneD_points=oneD_cross_section_points,
         point_thicknesses=point_thicknesses,
-        cap_thickness=baseline.cap_thickness if options.constant_cap_thickness else params.thickness
+        cap_thickness=baseline.cap_thickness if options.constant_cap_thickness else cap_thickness
     )
 
     total = resample.resolution
@@ -77,5 +77,6 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
         twoD_cross_section=twoD_cross_section_resampled,
         thickness_factors=thickness_factors,
         arc_length=arc_length,
-        thickness_value=params.thickness
+        thickness_value=params.thickness,
+        cap_thickness=cap_thickness
     )

@@ -29,7 +29,7 @@ def create_3d_cap(revolve_offset, y_translate, x_translate, cap_thickness):
 
     return cap
 
-def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, keying_enabled=False):
+def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, keying_enabled=False, cap_thickness=None):
     """
     Revolve the 2D cross_section around the Y axis to form the actuator body,
     then add a top 'cap'.
@@ -77,7 +77,7 @@ def create_3d_model(cross_section_points, params: Params, revolve_offset=1.0, ke
     else:
         profile = profile
 
-    cap_thickness = baseline.cap_thickness if options.constant_cap_thickness else params.thickness
+    # cap_thickness = baseline.cap_thickness if options.constant_cap_thickness else params.thickness
     cap = create_3d_cap(revolve_offset, y_translate, 0, cap_thickness)
     final = profile + cap
 
@@ -93,6 +93,7 @@ def create_3d_model_bending(
         loft_offset: float = 0.0,
         angular_section: float | None = None,
         keying_enabled: bool = False,
+        cap_thickness: float | None = None
     ):
     """
     Build a bending model from a list of 2D cross-sections and matching thickness factors.
@@ -183,7 +184,7 @@ def create_3d_model_bending(
         profile = profile
 
     if loft_offset > 0:
-        cap_thickness = baseline.cap_thickness if options.constant_cap_thickness else params.thickness
+        # cap_thickness = baseline.cap_thickness if options.constant_cap_thickness else cap_thickness
         cap = create_3d_cap(loft_offset, y_max, loft_offset, cap_thickness)
         final = profile + cap
     else:

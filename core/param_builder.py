@@ -54,11 +54,13 @@ def build_params_from_config_csv(
         thickness_factor = base.get("thickness_factor", [1.0,1.0,1.0]),
         thickness_factor2= base.get("thickness_factor2", [1.0,1.0,1.0]),
         thickness_mode   = str(base.get("thickness_mode", "variable")),
+        n_curves         = int(base.get("n_curves", baseline.n_curves)),
+        cap_thickness    = float(base.get("cap_thickness", baseline.cap_thickness)),
         center_offset    = baseline.revolve_offset,  # may switch below
         export_filename  = export_filename,
         export_folder    = export_folder,
         bending_enabled  = (not use_linear_fast),
-        angular_section  = float(base.get("angular_section", 0.0))
+        angular_section  = float(base.get("angular_section", 0.0)),
     )
 
     # center offset: revolve when linear_fast, else loft/bend

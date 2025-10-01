@@ -78,7 +78,10 @@ def variable_thd(outer_points, vt_control_points, all_thicknesses):
         # Add the final thickness of that segment
         point_thicknesses.append(thickness_vals[-1])
 
-    return point_thicknesses
+    # cap thickness is the first thickness value
+    cap_thickness = float(point_thicknesses[0]) if point_thicknesses else 1.0
+
+    return point_thicknesses, cap_thickness
 
 
 def _resample_list(vals, m):
@@ -172,11 +175,18 @@ def variable_thd_collapsed(
         # pick controls for this segment
         if seg_id in apply_set:
             ctrl = list(all_thicknesses[seg_id])
+            # anchor first value to second to avoid jump
+            if seg_id == 0:
+                ctrl[0] = ctrl[1]
+                # cap thickness is the first thickness value in the first ctrl segment
+                cap_thickness = float(ctrl[0])
             windowed = True
         else:
             # baseline [a,m,b] expanded to this segment's control count
             ctrl = _resample_list(list(baseline_values), len(idxs))
             windowed = False
+
+        # print(f"  seg {seg_id} idxs={idxs} ctrl={ctrl} windowed={windowed}")
 
         if len(ctrl) != len(idxs):
             ctrl = _resample_list(ctrl, len(idxs))
@@ -201,6 +211,7 @@ def variable_thd_collapsed(
                 k_rend  = k_start + ramp_len  # exclusive
 
                 # 1) hold v0
+                # if seg_id > 0:
                 out[i0:k_start] = v0
 
                 # 2) ramp v0 -> v1
@@ -227,7 +238,7 @@ def variable_thd_collapsed(
     if filled_to < n_outer:
         out[filled_to:] = out[filled_to - 1] if filled_to > 0 else 1.0
 
-    return out.tolist()
+    return out.tolist(), cap_thickness
 
 def variable_thd_sbend(
     outer_points,
@@ -311,4 +322,7 @@ def variable_thd_sbend(
         fill = point_thicknesses[-1] if point_thicknesses else 1.0
         point_thicknesses += [fill] * (n_outer - len(point_thicknesses))
 
-    return point_thicknesses
+    # cap thickness is the first thickness value
+    cap_thickness = float(point_thicknesses[0]) if point_thicknesses else baseline_thickness
+
+    return point_thicknesses, cap_thickness

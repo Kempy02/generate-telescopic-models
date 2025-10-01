@@ -33,7 +33,7 @@ def validate_parameters(
         raise ValueError(f"Length of period_factors must be at least {n_periods}")
     elif len(period_factors) > n_periods:
         period_factors = period_factors[:n_periods]
-        print(f"Warning: period_factors had extra entries. Trimmed to {len(period_factors)}.")
+        # print(f"Warning: period_factors had extra entries. Trimmed to {len(period_factors)}.")
 
     sum_f = sum(period_factors)
     if sum_f <= 0:

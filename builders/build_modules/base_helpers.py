@@ -147,7 +147,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         print(f"Base {options.use_base} used")
 
     # distance from center to screw holes
-    screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance)
+    screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance/2)
 
     # calculate displacement from outer edge to inner edge of the seal
     # First point (0 degrees) will always be at faces(">X")
@@ -174,7 +174,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
     # print(f"Base Thickness: {baseline.cap_thickness}mm")
 
     # Create text for seal
-    seal_text = first_letter_and_number(params.export_filename)
+    # seal_text = first_letter_and_number(params.export_filename)
 
     # SEAL
     base1 = (
@@ -209,9 +209,9 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         # .rect(params.thickness*2, params.thickness*2)
         # .extrude(baseline.keying_offset, both=True, combine="s")
         # Add Engraving
-        .faces("<Y")
-        .transformed(offset=(screw_hole_diameter/2, screw_hole_diameter/2, 0), rotate=(0,0,(180)))
-        .text(seal_text, fontsize=6, distance=-1.0, cut=True, combine=True, kind='bold')
+        # .faces("<Y")
+        # .transformed(offset=(screw_hole_diameter/2, screw_hole_diameter/2, 0), rotate=(0,0,(180)))
+        # .text(seal_text, fontsize=6, distance=-1.0, cut=True, combine=True, kind='bold')
         # translate for exploded view
         .translate((0, baseline.cap_thickness*exploded_factor, 0))
     )

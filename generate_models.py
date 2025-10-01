@@ -33,7 +33,7 @@ baseline = BaselineGeometryConfig()
 bend = BendSettings()
 
 
-# CSV_PATH = "datasets/experiment_set_bending1.csv"
+# CSV_PATH = "datasets/experiment_collapse1.csv"
 CSV_PATH = "datasets/test.csv"
 
 def generate_prototypes(

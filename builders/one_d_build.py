@@ -57,6 +57,7 @@ def generate_1D_curves(params: Params) -> Curves1D:
     export_filename  = params.export_filename
     export_folder    = params.export_folder
     center_offset    = params.center_offset
+    n_curves         = int(params.n_curves)
 
     # ---------------------------------
     # 1c) Derived parameters
@@ -73,11 +74,11 @@ def generate_1D_curves(params: Params) -> Curves1D:
         min_y_positions    = min_y_positions,
         desired_radius     = desired_radius,
         inside_tolerance   = baseline.inside_tolerance,
-        n_curves           = baseline.n_curves
+        n_curves           = n_curves
     )
 
     x_increments, y_positions = compute_x_increments_and_y_positions(
-        baseline.n_curves,
+        n_curves,
         amplitude0,
         min_y_positions,
         period_values,
@@ -101,7 +102,7 @@ def generate_1D_curves(params: Params) -> Curves1D:
         control_points_idx, control_points_idx_names,
         curve_points_idx, curve_points_idx_names
     ) = generate_curves(
-        baseline.n_curves,
+        n_curves,
         x_increments, y_positions,
         all_control_points, all_curve_points,
         control_points_idx, control_points_idx_names,
