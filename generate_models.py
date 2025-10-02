@@ -132,6 +132,7 @@ def generate_prototypes(
         
         # ---- Optional: export exploded system
         if getattr(run, "export_exploded_system", False) and getattr(run, "export_bases", False):
+            print("Exporting Exploded System...")
             exploded_system = report.model3d.threeD_model + base_components.Base_Exploded
             export(
                 exploded_system,
@@ -194,7 +195,7 @@ def main():
     run = RunOptions(
         export_model=True,
         export_bases=options.export_bases_flag,
-        export_exploded_system=False,
+        export_exploded_system=options.export_exploded_system,
         plot_1d=True,
         plot_2d=True,
         plot_3d=True,

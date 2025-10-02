@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Dict, Any
 class optionsConfig:
     plot_curve_flag: bool = True
     export_base_exploded_flag: bool = True
-    export_bases_flag: bool = False
+    export_bases_flag: bool = True
     use_base: int = 2                     # 0 = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
@@ -19,8 +19,8 @@ class optionsConfig:
     engrave_text: bool = False          # If True, engrave text on the sections
     ruled_flag: bool = True             # Set True unless failing - If True, use ruled loft (straighter lines between sections), else smooth loft
     constant_cap_thickness: bool = False  # If True, keep cap thickness constant, else scale with thickness value
-    thickness_mode: str = "sbend"    # "constant", "linear", "variable", "collapsed"
-    default_thickness_factors: List[float] = field(default_factory=lambda: [0.5, 0.25, 0.5])
+    thickness_mode: str = "variable"    # "constant", "linear", "variable", "collapsed", "sbend"
+    default_thickness_factors: List[float] = field(default_factory=lambda: [1.0, 1.0, 1.0])
 
 @dataclass
 class BaselineGeometryConfig:
@@ -69,7 +69,7 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
-    total_angular_section: float = 90  # degrees
+    total_angular_section: float = 360  # degrees
     angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass

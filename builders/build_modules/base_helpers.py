@@ -147,7 +147,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         print(f"Base {options.use_base} used")
 
     # distance from center to screw holes
-    screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance/2)
+    screw_hole_diameter = desired_diameter - 2*(screw_tolerance/2 + outer_screw_tolerance)
 
     # calculate displacement from outer edge to inner edge of the seal
     # First point (0 degrees) will always be at faces(">X")
@@ -213,7 +213,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
         # .transformed(offset=(screw_hole_diameter/2, screw_hole_diameter/2, 0), rotate=(0,0,(180)))
         # .text(seal_text, fontsize=6, distance=-1.0, cut=True, combine=True, kind='bold')
         # translate for exploded view
-        .translate((0, baseline.cap_thickness*exploded_factor, 0))
+        .translate((0, baseline.cap_thickness*exploded_factor*3, 0))
     )
 
     # base1 = (
@@ -287,7 +287,7 @@ def create_base(params: Params, xsection2D) -> BaseComponents:
 
     final = jimstron_clamp_cutout + checkerboard_holder
 
-    base = base1 + base2 + final
+    base = base1 + base2 
 
     return BaseComponents(
         Base_Exploded=base, 
