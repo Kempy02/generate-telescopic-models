@@ -33,8 +33,8 @@ baseline = BaselineGeometryConfig()
 bend = BendSettings()
 
 
-# CSV_PATH = "datasets/experiment_collapse1.csv"
-CSV_PATH = "datasets/test.csv"
+CSV_PATH = "datasets/ExRunFinal.csv"
+# CSV_PATH = "datasets/test.csv"
 
 def generate_prototypes(
     csv_path: str,
@@ -172,13 +172,15 @@ def generate_prototypes(
 
     # ---- Plot once at the end
     if plots_data and getattr(run, "plot_1d", False):
-        fig1 = plot_grouped_curves_by_model(plots_data, cols=3, share_axes=True, resolution=(360/bend.angle_intervals/2))
+        # fig1 = plot_grouped_curves_by_model(plots_data, cols=3, share_axes=True, resolution=(360/bend.angle_intervals/2))
+        fig1 = plot_grouped_curves_by_model(plots_data, cols=3, share_axes=True, resolution=(2))
         export_plot(fig1, title=oneD_plots_filename, export_type="png",
                     directory=run.directory, folder=plots_export_folder, overwrite=True)
 
     if plots_data and getattr(run, "plot_2d", False):
         if any(e.get("section_idx", 0) > 0 for e in plots_data.get(bucket, [])):
             fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=(360/bend.angle_intervals/2))
+            # fig2 = plot_twoD_xsection_by_model(plots_data, plot_points=True, markersize=1, cols=3, share_axes=True, resolution=(2))
         else:
             fig2 = plot_twoD_xsection_by_model(plots_data)
         export_plot(fig2, title=twoD_plots_filename, export_type="png",

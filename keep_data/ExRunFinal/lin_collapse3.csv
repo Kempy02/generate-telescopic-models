@@ -1,2 +1,2 @@
 angular_section,amplitude0,desired_radius,period_factors,offset_factor_x,mid_factor_x,curve_weight,thickness_factor,thickness_factor2,thickness,thickness_mode
-0,20.0,25.0,"[0.9, 1.0, 1.1]",0.375,0,5.0,"[0.38, 0.875, 0.38]","[0.38, 0.38, 0.38]",2,"collapsed"
+0,20.0,35.0,"[1.0, 1.0, 1.0]",0.7,0,4.0,"[0.3, 1.0, 0.3]","[0.3, 0.3, 0.3]",2,"collapsed"

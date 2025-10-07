@@ -47,7 +47,7 @@ def build_params_from_config_csv(
         offset_factor_x  = float(base.get("offset_factor_x", 0.0)),
         mid_factor_x     = float(base.get("mid_factor_x", 0.0)),
         mid_factor_y     = float(base.get("mid_factor_y", 0.0)),
-        min_y_positions  = list(base.get("min_y_positions", [0,0,0,0])),
+        min_y_positions  = list(base.get("min_y_positions", [0.0,0.0,0.0,0.0])),
         curve_weight     = float(base.get("curve_weight", 5.0)),
         weights          = list(base.get("weights", [1.0, 5.0, 1.0, 5.0, 1.0])),
         thickness        = float(base.get("thickness", 1.0)),

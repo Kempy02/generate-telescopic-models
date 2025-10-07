@@ -1,0 +1,5 @@
+Prototype ID,export_folder,config_csv,use_linear_fast
+lin_collapse0,prototype_models/ExRunFinal,datasets/configs/lin_collapse0.csv,False
+lin_collapse1,prototype_models/ExRunFinal,datasets/configs/lin_collapse1.csv,False
+lin_collapse2,prototype_models/ExRunFinal,datasets/configs/lin_collapse2.csv,False
+lin_collapse3,prototype_models/ExRunFinal,datasets/configs/lin_collapse3.csv,False

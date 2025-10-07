@@ -65,6 +65,8 @@ def generate_1D_curves(params: Params) -> Curves1D:
 
     weights  = [1, curve_weight, 1, curve_weight, 1]
     offset_factor_x0 = offset_factor_x
+    # multiply min_y_positions by amplitude0
+    min_y_positions = [y * amplitude0 for y in min_y_positions]
 
     # -----------------------------
     # 2) Validate & compute

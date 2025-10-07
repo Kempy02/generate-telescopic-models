@@ -54,7 +54,7 @@ def generate_2D_cross_sections(curves: Curves1D, params: Params) -> CrossSection
 
     # set cap_thickness option (based on thickness_mode)
     if params.thickness_mode == "sbend":
-        options.constant_cap_thickness = False
+        options.constant_cap_thickness = True
     else:
         options.constant_cap_thickness = options.constant_cap_thickness
 
