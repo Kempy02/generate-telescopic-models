@@ -106,7 +106,7 @@ def apply_thickness(
             outer_points=outer_points,
             vt_control_points=vt_control_points,
             all_thicknesses=all_thicknesses,
-            apply_sections=[0, 2, 4],
+            apply_sections=options.collapse_thick_sections,
             baseline_values=thickness_factor2,
             baseline_thickness=baseline_thickness,
             start_frac=0.350,

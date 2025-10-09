@@ -1,2 +1,2 @@
 Prototype ID,export_folder,config_csv,use_linear_fast,arc_length_min,arc_length_max,arc_length_ratio,thickness_min,thickness_max,thickness_ratio
-sbend2,prototype_models,datasets/configs/sbending2.csv,False,133.091773,133.999362,1.006819,1.800000,1.800000,1.000000
+bend_collapse5,prototype_models,datasets/configs/bend_collapse5.csv,False,105.351579,148.064358,1.405431,2.000000,2.000000,1.000000

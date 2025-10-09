@@ -8,7 +8,7 @@ class optionsConfig:
     plot_curve_flag: bool = True
     export_base_exploded_flag: bool = True
     export_bases_flag: bool = True
-    use_base: int = None                    # 0 = auto, 1 = min, 2 = mid, 3 = max
+    use_base: int = 2                    # None = auto, 1 = min, 2 = mid, 3 = max
     export_exploded_system: bool = False
     export_crossSection_flag: bool = False
     export_model_flag: bool = True
@@ -20,7 +20,8 @@ class optionsConfig:
     ruled_flag: bool = True             # Set True unless failing - If True, use ruled loft (straighter lines between sections), else smooth loft
     constant_cap_thickness: bool = False  # If True, keep cap thickness constant, else scale with thickness value
     thickness_mode: str = "variable"    # "constant", "linear", "variable", "collapsed", "sbend"
-    default_thickness_factors: List[float] = field(default_factory=lambda: [1.0, 1.0, 1.0])
+    default_thickness_factors: List[float] = field(default_factory=lambda: [1.0, 1.0, 1.0]) 
+    collapse_thick_sections: list[int] = field(default_factory=lambda: [0, 2, 4]) 
 
 @dataclass
 class BaselineGeometryConfig:

@@ -1,5 +1,2 @@
 Prototype ID,export_folder,config_csv,use_linear_fast,arc_length_min,arc_length_max,arc_length_ratio,thickness_min,thickness_max,thickness_ratio
 lin_collapse0,prototype_models/ExRunFinal,datasets/configs/lin_collapse0.csv,False,131.571907,131.571907,1.000000,2.000000,2.000000,1.000000
-lin_collapse1,prototype_models/ExRunFinal,datasets/configs/lin_collapse1.csv,False,141.237963,141.237963,1.000000,2.000000,2.000000,1.000000
-lin_collapse2,prototype_models/ExRunFinal,datasets/configs/lin_collapse2.csv,False,149.329320,149.329320,1.000000,2.000000,2.000000,1.000000
-lin_collapse3,prototype_models/ExRunFinal,datasets/configs/lin_collapse3.csv,False,155.974900,155.974900,1.000000,2.000000,2.000000,1.000000
