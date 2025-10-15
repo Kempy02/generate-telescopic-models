@@ -34,7 +34,8 @@ bend = BendSettings()
 
 
 # CSV_PATH = "datasets/ExRunFinal1.csv"
-CSV_PATH = "datasets/test.csv"
+# CSV_PATH = "datasets/test.csv"
+CSV_PATH = "keep_data/ExRunFinal/ExRunFinal.csv"
 
 def generate_prototypes(
     csv_path: str,

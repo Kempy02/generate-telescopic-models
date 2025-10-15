@@ -1,7 +1,0 @@
-Prototype ID,export_folder,config_csv,use_linear_fast,arc_length
-linear1,prototype_models,datasets/configs/linear1.csv,True,76.965735
-linear2,prototype_models,datasets/configs/linear2.csv,True,101.768650
-bending3,prototype_models,datasets/configs/bending3.csv,False,122.648055
-linear5,prototype_models,datasets/configs/linear5.csv,True,95.394625
-linear7,prototype_models,datasets/configs/linear7.csv,True,105.605780
-linear9,prototype_models,datasets/configs/linear9.csv,True,100.037523

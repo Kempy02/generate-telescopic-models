@@ -28,15 +28,15 @@ class BaselineGeometryConfig:
     start_x: float = 0
     start_y: float = 0
     cap_height: float = 1
-    cap_length: float = 10
+    cap_length: float = 10 
     upper_cap_length: float = 2.5
-    cap_thickness: float = 1.0
-    cap_pts_ratio: float = 0.95
-    inside_tolerance: float = 5
-    n_curves: int = 5
-    revolve_offset: float = 1.0
-    loft_offset: float = 0.0
-    keying_offset: float = 2.0
+    cap_thickness: float = 1.0 
+    cap_pts_ratio: float = 0.95 
+    inside_tolerance: float = 5 
+    n_curves: int = 5 
+    revolve_offset: float = 1.0 
+    loft_offset: float = 0.0 
+    keying_offset: float = 2.0 
 
 @dataclass
 class NURBSConfig:
@@ -70,7 +70,7 @@ class ResampleSettings:
 
 @dataclass
 class BendSettings:
-    total_angular_section: float = 360  # degrees
+    total_angular_section: float = 180  # degrees
     angle_intervals: float = 10.0  # degrees between each workplane
 
 @dataclass

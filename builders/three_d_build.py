@@ -48,7 +48,7 @@ def generate_3D_model(xsec: CrossSections2D | list[CrossSections2D], params: Par
             revolve_offset=params.center_offset,
             params=params,
             keying_enabled=options.keying_feature,
-            cap_thickness=cap_thicknesses[0] if not options.constant_cap_thickness else baseline.cap_thickness
+            cap_thickness=xsec.cap_thickness if not options.constant_cap_thickness else baseline.cap_thickness
         )
 
     return Model3D(threeD_model=model)

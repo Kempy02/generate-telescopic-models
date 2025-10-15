@@ -1,2 +1,2 @@
 Prototype ID,export_folder,config_csv,use_linear_fast
-bend_collapse5,prototype_models,datasets/configs/bend_collapse5.csv,False
+baseline1,prototype_models,datasets/configs/baseline1.csv,False

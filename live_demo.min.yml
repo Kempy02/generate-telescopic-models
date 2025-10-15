@@ -1,0 +1,13 @@
+name: live-demo
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - shapely
+  - matplotlib
+  - pyside6            # Qt bindings for the UI (QtAgg backend)
+  - pip
+  - pip:
+      - geomdl>=5.3

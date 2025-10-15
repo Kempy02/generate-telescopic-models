@@ -1,3 +1,0 @@
-angular_section,amplitude0,desired_radius,period_factors,offset_factor_x,mid_factor_x,curve_weight,thickness_factor,thickness
-0,20.0,21.0,"[1.0, 1.0, 1.0]",-0.4,0,5.0,"[1.0, 1.0, 1.0]",1.2
-180,20.0,29.0,"[1.0, 1.0, 1.0]",0.6,0,5.0,"[1.0, 1.0, 1.0]",0.8
