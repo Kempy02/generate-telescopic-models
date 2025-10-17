@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFormLayout,
     QTabWidget, QGroupBox, QScrollArea, QLabel, QComboBox, QSlider, QPushButton,
-    QFileDialog, QToolBar
+    QFileDialog, QToolBar, QDoubleSpinBox, QSpinBox
 )
 
 # --------- your project imports ----------
@@ -137,46 +137,164 @@ def _draw_2d(ax, xsec2d):
 
 # ---------- slider widgets ----------
 def _scale_from_step(step: float) -> int:
+    """
+    Scale factor to represent float steps as slider integers.
+    e.g. step=0.01 -> 100; step=0.05 -> 20; step=0.1 -> 10
+    """
     s = str(step)
     if "." in s:
         decimals = len(s.split(".")[1].rstrip("0"))
-        return 10**max(decimals, 0)
+        # handle odd steps like 0.05 → keep enough precision
+        # 0.05 -> 20, 0.025 -> 40, etc.
+        base = 10 ** max(decimals, 0)
+        # If step*base isn't integer, bump until it is
+        scale = base
+        while abs(step * scale - round(step * scale)) > 1e-12:
+            scale *= 2
+        return scale
     return 1
 
+
 class FloatSlider(QWidget):
+    """
+    Float slider + spinbox (synced).
+    - Drag slider for coarse change
+    - Type in spinbox for exact values
+    Signals:
+      valueChanged(float)
+    """
     valueChanged = Signal(float)
+
     def __init__(self, minimum: float, maximum: float, step: float, init: float, suffix: str = ""):
         super().__init__()
-        from PySide6.QtWidgets import QHBoxLayout
+        # from PySide6.QtWidgets import QHBoxLayout
         self.suffix = suffix
         self.scale = _scale_from_step(step)
+
         self._min = int(round(minimum * self.scale))
         self._max = int(round(maximum * self.scale))
         self._step = max(1, int(round(step * self.scale)))
-        lay = QHBoxLayout(self); lay.setContentsMargins(0,0,0,0); lay.setSpacing(8)
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(8)
+
+        # Slider (integer domain)
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setRange(self._min, self._max)
         self.slider.setSingleStep(self._step)
         self.slider.setPageStep(self._step * 5)
         self.slider.setValue(int(round(init * self.scale)))
-        self.label = QLabel(f"{init:.4g}{self.suffix}")
-        self.label.setFixedWidth(84)
-        lay.addWidget(self.slider, stretch=1)
-        lay.addWidget(self.label, stretch=0)
-        self.slider.valueChanged.connect(self._on_change)
-    def _on_change(self, ivalue: int):
-        v = ivalue / float(self.scale)
-        self.label.setText(f"{v:.4g}{self.suffix}")
-        self.valueChanged.emit(v)
-    def value(self) -> float:
-        return self.slider.value() / float(self.scale)
-    def setValue(self, v: float):
-        self.slider.setValue(int(round(v * self.scale)))
 
-class IntSlider(FloatSlider):
+        # Spinbox (float domain)
+        self.spin = QDoubleSpinBox()
+        # derive decimals from step
+        decimals = 0
+        s = str(step)
+        if "." in s:
+            decimals = len(s.split(".")[1].rstrip("0"))
+        # also handle steps like 0.05 cleanly
+        while abs(step * (10**decimals) - round(step * (10**decimals))) > 1e-12 and decimals < 6:
+            decimals += 1
+        self.spin.setDecimals(decimals)
+        self.spin.setRange(minimum, maximum)
+        self.spin.setSingleStep(step)
+        self.spin.setValue(init)
+        self.spin.setSuffix(f" {self.suffix}".strip())
+
+        lay.addWidget(self.slider, stretch=1)
+        lay.addWidget(self.spin, stretch=0)
+
+        # Sync both ways (guard re-entrancy)
+        self._updating = False
+
+        def slider_changed(ivalue: int):
+            if self._updating:
+                return
+            self._updating = True
+            v = ivalue / float(self.scale)
+            self.spin.setValue(v)
+            self._updating = False
+            self.valueChanged.emit(v)
+
+        def spin_changed(v: float):
+            if self._updating:
+                return
+            self._updating = True
+            self.slider.setValue(int(round(v * self.scale)))
+            self._updating = False
+            self.valueChanged.emit(float(v))
+
+        self.slider.valueChanged.connect(slider_changed)
+        self.spin.valueChanged.connect(spin_changed)
+
+    def value(self) -> float:
+        return float(self.spin.value())
+
+    def setValue(self, v: float):
+        self.spin.setValue(float(v))
+
+
+class IntSlider(QWidget):
+    """
+    Integer slider + spinbox (synced).
+    - Same API as FloatSlider: .value(), .setValue(), .valueChanged(float)
+    - Emits float for consistency, but holds ints internally.
+    """
+    valueChanged = Signal(float)
+
     def __init__(self, minimum: int, maximum: int, step: int, init: int, suffix: str = ""):
-        super().__init__(minimum, maximum, max(1, step), init, suffix)
-        self.scale = 1
+        super().__init__()
+        self._min, self._max, self._step = int(minimum), int(maximum), max(1, int(step))
+        self.suffix = suffix
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(8)
+
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setRange(self._min, self._max)
+        self.slider.setSingleStep(self._step)
+        self.slider.setPageStep(self._step * 5)
+        self.slider.setValue(int(init))
+
+        self.spin = QSpinBox()
+        self.spin.setRange(self._min, self._max)
+        self.spin.setSingleStep(self._step)
+        self.spin.setValue(int(init))
+        # (QSpinBox has no native suffix like QDoubleSpinBox; skip or add a QLabel if desired.)
+
+        lay.addWidget(self.slider, stretch=1)
+        lay.addWidget(self.spin, stretch=0)
+
+        self._updating = False
+
+        def slider_changed(ivalue: int):
+            if self._updating: return
+            self._updating = True
+            self.spin.setValue(ivalue)
+            self._updating = False
+            self.valueChanged.emit(float(ivalue))
+
+        def spin_changed(v: int):
+            if self._updating: return
+            self._updating = True
+            self.slider.setValue(int(v))
+            self._updating = False
+            self.valueChanged.emit(float(v))
+
+        self.slider.valueChanged.connect(slider_changed)
+        self.spin.valueChanged.connect(spin_changed)
+
+        # Optional: smoother typing UX
+        self.spin.setKeyboardTracking(False)
+        self.spin.editingFinished.connect(lambda: self.valueChanged.emit(self.value()))
+
+    def value(self) -> float:
+        return float(self.spin.value())
+
+    def setValue(self, v: float):
+        self.spin.setValue(int(round(v)))
 
 # ---------- UI ----------
 class DemoWindow(QMainWindow):
@@ -305,7 +423,7 @@ class DemoWindow(QMainWindow):
 
         g2_core = QGroupBox("Thickness")
         f = QFormLayout(g2_core)
-        self.s_th = FloatSlider(0.1, 5.0, 0.1, self.defaults["thickness"], " mm")
+        self.s_th = FloatSlider(0.25, 5.0, 0.01, self.defaults["thickness"], " mm")
 
         self.cb_mode = QComboBox()
         self.cb_mode.addItems(["constant","linear","variable","collapsed","sbend"])
