@@ -93,6 +93,8 @@ There are two CSV layers: a top‑level models list and a per‑model “bending
 
 ### 1) Top‑level models list
 
+Contains the list of all models to be built, where each , and directs the builder to the configuration CSV for each model.
+
 File: `datasets/test.csv` (example)
 
 Columns:
@@ -110,6 +112,8 @@ baseline1,prototype_models,datasets/configs/baseline1.csv,False
 ```
 
 ### 2) Cross-Section Config CSV (keyframe)
+
+Contains the 
 
 File: e.g., `datasets/configs/baseline.csv`
 
@@ -216,7 +220,7 @@ To add a new parameter:
 3. Consume it in the relevant builder(s): `one_d_build.py` / `two_d_build.py` / `three_d_build.py`.
 4. Add the parameter to your keyframe CSV rows. If it’s numeric or a same‑length list, it will be interpolated. Otherwise, it will be step‑wise.
 
-## Revised Detailed Workflow Overview
+## Detailed Workflow Overview
 
 1) Environment
 - Create and activate the conda environment from `generate_geometry.min.yml` (see Quick start). This installs CadQuery 2.5.x and required Python packages.
@@ -246,5 +250,11 @@ To add a new parameter:
 
 7) Review
 - Inspect models in `prototype_models/`, bases in `prototype_bases/`, plots in `prototype_plots/`, and metrics CSVs in `datasets/`.
+
+## Build Visualisation
+
+https://github.com/user-attachments/assets/63bdd84f-9af0-41af-ae29-593eda1ea124
+
+
 
 
