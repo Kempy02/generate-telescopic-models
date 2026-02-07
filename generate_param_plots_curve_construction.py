@@ -15,16 +15,31 @@ Example:
 
 python generate_param_plots_curve_construction.py \
   --csv datasets/ParamPlots/test.csv \
-  --prototype-id Baseline \
+  --prototype-id bend_collapse5 \
   --export-formats png \
   --max-control-point-frames 20 \
-  --max-polyline-frames 12 \
-  --max-circle-frames 12 \
+  --max-polyline-frames 48 \
+  --max-circle-frames 192 \
   --start-x-limits -40 5 \
   --start-z-limits -5 30 \
-  --axis-transition-frames 18 \
+  --axis-transition-frames 36 \
   --circle-radius 1.0 \
-  --union-fill-frames 12
+  --union-fill-frames 96 \
+  --shade-final-outline \
+  --final-outline-alpha 0.5
+
+# Combine frames into a video using ffmpeg:
+ffmpeg \
+  -framerate 30 \
+  -pattern_type glob \
+  -i "prototype_plots/curve_construction_frames/*.png" \
+  -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" \
+  -pix_fmt yuv420p \
+  -c:v libx264 \
+  -r 30 \
+  report/videos/curve_construction.mp4
+
+
 
 """
 
@@ -43,6 +58,7 @@ try:
     from matplotlib import colors as mcolors
     from matplotlib.patches import Circle
     from mpl_toolkits.mplot3d import art3d
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 except ImportError as exc:  # pragma: no cover
     raise SystemExit(
         "matplotlib is required for plotting. Install it with `pip install matplotlib`."
@@ -93,9 +109,9 @@ RC_PARAMS = {
 COLUMN_WIDTH = 7.0  # inches
 ROW_HEIGHT = 6.0   # inches
 
-STATIC_X_LIMITS: Tuple[float, float] | None = (-40.0, 40.0)
-STATIC_Y_LIMITS: Tuple[float, float] | None = (-40.0, 40.0)
-STATIC_Z_LIMITS: Tuple[float, float] | None = (-30.0, 50.0)
+STATIC_X_LIMITS: Tuple[float, float] | None = (-31.0, 31.0)
+STATIC_Y_LIMITS: Tuple[float, float] | None = (-31.0, 31.0)
+STATIC_Z_LIMITS: Tuple[float, float] | None = (-23.0, 39.0)
 
 GLOBAL_LIMIT_MARGIN = 0.05
 VIEW_DISTANCE = 9.0
@@ -106,11 +122,11 @@ CONTROL_POINT_COLOR = "#65324E"
 CONTROL_POINT_SIZE = 26
 CONTROL_POINT_EDGE = "#A85E85"
 LINE_COLOR = "#BC4A87"
-LINE_WIDTH = 1.0
+LINE_WIDTH = 1.6
 CIRCLE_EDGE_COLOR = "#371F35"
 CIRCLE_FACE_COLOR = "#CC9ADD"
-CIRCLE_EDGE_WIDTH = 0.6
-CIRCLE_ALPHA = 0.3
+CIRCLE_EDGE_WIDTH = 1.0
+CIRCLE_ALPHA = 0.25
 UNION_FILL_COLOR = "#BC4A87"
 ONED_TWOD_COLOR = "#BC4A87"
 
@@ -525,7 +541,7 @@ def _plot_polyline(
         color=color,
         linewidth=linewidth,
         alpha=alpha,
-        solid_capstyle="round",
+        # solid_capstyle="round",
     )
     if close and upto == len(x3d):
         ax.plot(
@@ -624,6 +640,28 @@ def _add_circle_patch(ax, center_x: float, center_z: float, radius: float) -> Ci
     return circle
 
 
+def _add_outline_fill(
+    ax,
+    x3d: np.ndarray,
+    y3d: np.ndarray,
+    z3d: np.ndarray,
+    *,
+    alpha: float,
+) -> None:
+    if x3d.size < 3:
+        return
+    polygon = list(zip(x3d, y3d, z3d))
+    if polygon[0] != polygon[-1]:
+        polygon.append(polygon[0])
+    collection = Poly3DCollection(
+        [polygon],
+        facecolors=[(*mcolors.to_rgb(UNION_FILL_COLOR), alpha)],
+        linewidths=0.0,
+        edgecolors="none",
+    )
+    ax.add_collection3d(collection)
+
+
 def generate_curve_construction_frames_for_configuration(
     csv_path: str,
     prototype_id: str | None = None,
@@ -643,6 +681,8 @@ def generate_curve_construction_frames_for_configuration(
     start_z_limits: Optional[Sequence[float]] = None,
     axis_transition_frames: int = 12,
     union_fill_frames: int = 8,
+    shade_final_outline: bool = False,
+    final_outline_alpha: float = 0.12,
     export_formats: Sequence[str] = ("png",),
 ) -> List[str]:
     """Generate per-frame images illustrating the cross-section construction."""
@@ -883,18 +923,6 @@ def generate_curve_construction_frames_for_configuration(
         )
         for cx, cz, radius, _ in circle_centers:
             _add_circle_patch(ax, cx, cz, radius)
-        if x3d_full.size:
-            mask = outline_arc_points <= threshold + 1e-9
-            if np.any(mask):
-                ax.scatter(
-                    x3d_full[mask],
-                    y3d_full[mask],
-                    z3d_full[mask],
-                    s=18,
-                    color=outline_color,
-                    alpha=0.6,
-                    depthshade=False,
-                )
         _plot_outline_progress(
             ax,
             x3d_full,
@@ -903,9 +931,29 @@ def generate_curve_construction_frames_for_configuration(
             arc_lengths=outline_arc_lengths,
             threshold=threshold,
             color=outline_color,
-            linewidth=2.2,
+            linewidth=LINE_WIDTH*1.5,
             alpha=0.9,
         )
+        _finalize_and_save(fig)
+
+    if shade_final_outline:
+        fig, ax = _create_3d_axes(
+            title=f"{TITLE_BASE} – Shaded Outline",
+            view_elev=view_elev,
+            view_azim=view_azim,
+            axes_limits=stage_limits_clean,
+        )
+        _plot_polyline(
+            ax,
+            x3d_full,
+            y3d_full,
+            z3d_full,
+            upto=len(unique_section),
+            close=True,
+            alpha=0.85,
+            color=outline_color,
+        )
+        _add_outline_fill(ax, x3d_full, y3d_full, z3d_full, alpha=final_outline_alpha)
         _finalize_and_save(fig)
 
     # Stage 5: axis transition to final limits.
@@ -929,16 +977,6 @@ def generate_curve_construction_frames_for_configuration(
                 view_azim=view_azim,
                 axes_limits=blended_clean,
             )
-            if x3d_full.size:
-                ax.scatter(
-                    x3d_full,
-                    y3d_full,
-                    z3d_full,
-                    s=15,
-                    color=outline_color,
-                    alpha=0.35,
-                    depthshade=False,
-                )
             _plot_polyline(
                 ax,
                 x3d_full,
@@ -949,6 +987,8 @@ def generate_curve_construction_frames_for_configuration(
                 alpha=0.85,
                 color=outline_color,
             )
+            if shade_final_outline:
+                _add_outline_fill(ax, x3d_full, y3d_full, z3d_full, alpha=final_outline_alpha)
             _finalize_and_save(fig)
 
     return saved_paths
@@ -1052,6 +1092,17 @@ def main() -> None:
         help="Number of frames used to sweep the 2D outline along the X axis.",
     )
     parser.add_argument(
+        "--shade-final-outline",
+        action="store_true",
+        help="Add a final frame (and transition frames) with the 2D outline shaded.",
+    )
+    parser.add_argument(
+        "--final-outline-alpha",
+        type=float,
+        default=0.12,
+        help="Alpha used when shading the final 2D outline (ignored if shading disabled).",
+    )
+    parser.add_argument(
         "--export-formats",
         nargs="+",
         default=("png",),
@@ -1077,6 +1128,8 @@ def main() -> None:
         start_z_limits=args.start_z_limits,
         axis_transition_frames=args.axis_transition_frames,
         union_fill_frames=args.union_fill_frames,
+        shade_final_outline=args.shade_final_outline,
+        final_outline_alpha=args.final_outline_alpha,
         export_formats=args.export_formats,
     )
 

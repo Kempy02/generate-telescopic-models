@@ -1,0 +1,18 @@
+Prototype ID,export_folder,config_csv,use_linear_fast,highlight_control_points,first_and_last_only
+baseline,prototype_models,datasets/configs/baseline.csv,False,"[]",False
+AMP1,prototype_models,datasets/configs/AMP1.csv,False,"[2,4]",False
+AMP2,prototype_models,datasets/configs/AMP2.csv,False,"[2,4]",False
+RAD1,prototype_models,datasets/configs/RAD1.csv,False,"[]",True
+RAD2,prototype_models,datasets/configs/RAD2.csv,False,"[]",True
+NOC1,prototype_models,datasets/configs/NOC1.csv,False,"[1]",False
+NOC2,prototype_models,datasets/configs/NOC2.csv,False,"[1]",False
+XMF1,prototype_models,datasets/configs/XMF1.csv,False,"[3]",False
+XMF2,prototype_models,datasets/configs/XMF2.csv,False,"[3]",False
+XOF1,prototype_models,datasets/configs/XOF1.csv,False,"[2,4]",False
+XOF2,prototype_models,datasets/configs/XOF2.csv,False,"[2,4]",False
+CWT1,prototype_models,datasets/configs/CWT1.csv,False,"[2,4]",False
+CWT2,prototype_models,datasets/configs/CWT2.csv,False,"[2,4]",False
+PRD1,prototype_models,datasets/configs/PRD1.csv,False,"[1]",False
+PRD2,prototype_models,datasets/configs/PRD2.csv,False,"[1]",False
+MYP1,prototype_models,datasets/configs/MYP1.csv,False,"[1]",False
+MYP2,prototype_models,datasets/configs/MYP2.csv,False,"[1]",False

@@ -17,16 +17,36 @@ build/
 *.STP
 *.3mf
 
+# Ignore csv files
+*.csv
+# except for those listed below:
+!datasets/ParamPlots/ParamPlots1D.csv
+!datasets/ParamPlots/ParamPlots2D.csv
+
 # Ignore plot files
 *.png
+*.svg
+*.pdf
+# except for those in the prototype_plots folder:
+!prototype_plots/*.png
+
+# Ignore video files
+*.mp4
+*.mov
 
 # Ignore csv files
 *\_interp.csv
 
-# Ignore folder: ExRun0
+# Ignore select folders:
 # ExRun0/
+wavetable_curve_builder/
+
+# ignore select files:
+Report.md
+
 
 # but do not ignore the directory or any file inside: 
 # [the ! operator negates the ignore rule]
-!keep_data/
-!keep_data/**
+# !keep_data/
+# !keep_data/**
+!Report/

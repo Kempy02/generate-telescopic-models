@@ -118,6 +118,7 @@ def generate_geometry_bend(params: Params, bending_csv_path: str, testing_mode: 
             stop_progress_bar()
     else:
         model_3d = None
+        print("Skipping 3D model generation.")
     
     # Stop the timer
     t.toc("Total build time:")
