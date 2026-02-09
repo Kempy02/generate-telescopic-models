@@ -1,8 +1,6 @@
-# 2D cross-sections with shading
-# python generate_param_plots2D_single.py --csv datasets/ParamPlots/test.csv --plot-dimension 2d --shade-2d --use-1d-baseline
 
-# 1D curve comparison
-# python generate_param_plots.py --csv datasets/ParamPlots/ParamPlots1D.csv --plot-dimension 1d
+# FOR FIG 2B - 2D Thickness Offset
+# python generate_param_plots2D_single.py --csv datasets/ParamPlots/2D_thickness_offset.csv --plot-dimension 2d --shade-2d --use-1d-baseline
 
 from __future__ import annotations
 
@@ -33,7 +31,7 @@ from io_modules.read_csv import read_param_rows_csv
 
 CSV_PATH = "datasets/ParamPlots/ParamPlots.csv"
 DEFAULT_PLOT_FOLDER = "prototype_plots"
-DEFAULT_PLOT_FILENAME = "param_variants"
+DEFAULT_PLOT_FILENAME = "2d_thickness_offset"
 
 TITLE = "Geometric Impacts of 2D Parameters"
 
@@ -52,6 +50,7 @@ PARAM_LABELS = {
     "CPS": "Thickness Mode: Collapse",
     "SBD": "Thickness Mode: S-Bending",
     "THV": "Thickness Value",
+    "BAS2D": "Baseline - 2D Cross-Section",
 }
 # COLOR_PALETTE = [ '#A23B72',"#021720",]  # Blue and Rose colors
 # COLOR_PALETTE1 = "#BC4A87"
@@ -75,6 +74,7 @@ CAP_CONTROL_POINTS = 3  # number of initial cap control points to skip when plot
 STACKED_GROUP_GAP_RATIO = 0.2
 
 INCLUDE_BASELINE = True
+USE_VARIANTS = False  # if False, only plot the baseline configuration without variants (useful for debugging)
 
 
 @dataclass
@@ -832,156 +832,283 @@ def generate_parameter_plots(
         entry = _extract_plot_points(row, baseline_config, entry_dimension)
         data.append(entry)
 
-    # print(data[3])
+    if not USE_VARIANTS:
+        if len(data) != 1:
+            raise ValueError("USE_VARIANTS=False expects exactly one row in the CSV.")
 
-    # baseline_entry, grouped = _group_variants(data)
-    baseline_entry, grouped, baseline_entry7 = _group_variants(data)
+        single_entry = data[0]
+        # Build a baseline overlay so the dashed curve is still shown in single-entry mode.
+        baseline_top_row = {
+            "Prototype ID": "baseline",
+            "export_folder": "prototype_models",
+            "config_csv": None,
+            "use_linear_fast": False,
+        }
+        # Prefer a 5-curve baseline, then fall back to the single-row baseline.
+        if os.path.exists("datasets/configs/baseline1.csv"):
+            baseline_top_row["config_csv"] = "datasets/configs/baseline1.csv"
+        elif os.path.exists("datasets/configs/baseline.csv"):
+            baseline_top_row["config_csv"] = "datasets/configs/baseline.csv"
+        elif os.path.exists("datasets/configs/baseline7.csv"):
+            baseline_top_row["config_csv"] = "datasets/configs/baseline7.csv"
+        else:
+            baseline_top_row["config_csv"] = ""
 
-    if not grouped:
-        raise ValueError("No parameter variants (suffix 1/2) found in CSV.")
+        baseline_dimension = (
+            "1d" if use_1d_baseline_for_2d and plot_dimension == "2d" else plot_dimension
+        )
 
-    group_names = list(grouped.keys())
-    n_groups = len(group_names)
-    if not columns:
-        cols = 3 if n_groups > 3 else n_groups
-        cols = max(cols, 1)
-    else:
-        cols = columns
+        try:
+            baseline_entry = _extract_plot_points(baseline_top_row, baseline_config, baseline_dimension)
+        except Exception:
+            baseline_entry = None  # If baseline can't be built, continue without it.
 
-    rows_n = math.ceil(n_groups / cols)
+        fig, ax = plt.subplots(figsize=(7, 6))
 
+        # Align variant and baseline to a common max X so they overlay cleanly.
+        target_max_x = _max_x_coordinate(single_entry.points)
+        if baseline_entry is not None and baseline_entry.points:
+            try:
+                target_max_x = max(target_max_x, _max_x_coordinate(baseline_entry.points))
+            except Exception:
+                pass
+        variant_aligned = _align_entry_to_xmax(single_entry, target_max_x)
+        baseline_aligned = _align_entry_to_xmax(baseline_entry, target_max_x) if baseline_entry else None
 
-    fig_width = max(11, 5.5 * cols)
-    # fig_width = 11
+        # Plot dashed baseline first (if available).
+        if baseline_aligned:
+            close_baseline = plot_dimension == "2d" and baseline_aligned.source_dimension == "2d"
+            xs_base, ys_base = _ensure_closed(baseline_aligned.points, close=close_baseline)
+            if xs_base:
+                ax.plot(
+                    xs_base,
+                    ys_base,
+                    color="#777777",
+                    linestyle=(0, (6, 4)),
+                    linewidth=1.2,
+                    label="Baseline - 1D Curve" if baseline_dimension == "1d" else "Baseline",
+                )
 
-    if not stack_variants:
-        # fig_height = max(10, 5.0 * rows_n)
-        # fig_height = 5.0 * rows_n
-        fig_height = 6
-        fig_width = 7
-        fig, axes = plt.subplots(rows_n, cols, figsize=(fig_width, fig_height), squeeze=False)
-        axes_flat = axes.ravel()
+        close_polygons = plot_dimension == "2d" and variant_aligned.source_dimension == "2d"
+        xs, ys = _ensure_closed(variant_aligned.points, close=close_polygons)
+        if not xs:
+            raise ValueError("Geometry for the single entry is empty.")
 
-        for subplot_idx, group_name in enumerate(group_names):
-            ax = axes_flat[subplot_idx]
-            variants = grouped[group_name]
-            if group_name == "SBD":
-                print(group_name)
-                baseline_entry_to_use = baseline_entry7
-            else:
-                baseline_entry_to_use = baseline_entry
-            _plot_group_axes(
+        color = COLOR_PALETTE1
+        ax.plot(xs, ys, color=color, linewidth=1.8 * THICKNESS_FACTOR, label=variant_aligned.name)
+        if plot_dimension == "2d" and shade_2d and variant_aligned.source_dimension == "2d":
+            ax.fill(xs, ys, color=color, alpha=0.15, linewidth=0.0)
+
+        if show_control_points:
+            _plot_control_points(
                 ax,
-                baseline_entry_to_use,
-                variants,
-                group_name,
-                subplot_idx,
-                plot_dimension,
-                shade_2d,
-                show_control_points,
-                stacked_mode=False,
-                stacked_position=0,
-                stacked_total=1,
+                variant_aligned.control_points,
+                variant_aligned.highlight_control_points,
+                marker=CONTROL_POINT_MARKER_VARIANT,
+                highlight_marker=CONTROL_POINT_MARKER_VARIANT,
+                highlight_color=color,
+                base_color=color,
+                edge_color=CONTROL_POINT_VARIANT_EDGE_COLOR,
+                base_alpha=0.2,
+                highlight_alpha=0.9,
+                zorder=4.5,
+                first_and_last_only=variant_aligned.first_and_last_only,
             )
 
-        # Hide unused axes
-        for ax_idx in range(n_groups, len(axes_flat)):
-            axes_flat[ax_idx].axis("off")
-    # Stacked variant mode
+        limits_baseline = baseline_aligned if baseline_aligned else variant_aligned
+        x_limits, y_limits = _compute_local_limits(
+            limits_baseline,
+            [] if baseline_aligned is None else [variant_aligned],
+            plot_dimension,
+            show_control_points,
+            include_baseline=True,
+            stack_mode=False,
+        )
+
+        # ax.set_title(variant_aligned.name or "Parameter Plot", fontsize=18, fontweight="bold", loc="left", pad=10)
+        ax.set_title("B: 2D Thickness Offset", fontsize=18, fontweight="bold", loc="left", pad=10)
+        ax.set_xlabel("X [mm]", fontsize=14, fontweight="medium")
+        ax.set_ylabel("Y [mm]", fontsize=14, fontweight="medium")
+        ax.set_aspect("equal")
+        ax.set_xlim(*x_limits)
+        ax.set_ylim(*y_limits)
+        ax.set_facecolor("#FAFAFA")
+        ax.grid(True, alpha=0.3, linestyle=":", linewidth=0.8)
+        ax.set_axisbelow(True)
+        legend = ax.legend(
+            fontsize=11,
+            loc="upper right",
+            bbox_to_anchor=(1.0, 1.0),
+            framealpha=0.95,
+            edgecolor="gray",
+            frameon=True,
+            shadow=False,
+            borderpad=0.6,
+            handletextpad=0.5,
+            columnspacing=1.0,
+            borderaxespad=0.6,
+            ncol=1,
+        )
+        legend.get_frame().set_linewidth(0.8)
+        ax.tick_params(axis="both", which="major", labelsize=12, length=5, width=1.2)
+        ax.tick_params(axis="both", which="minor", length=3, width=0.8)
+        ax.minorticks_on()
+        for spine in ax.spines.values():
+            spine.set_linewidth(1.2)
+            spine.set_color("#333333")
+
+        fig.tight_layout(pad=1.0)
     else:
-        max_variants = max((len(v) for v in grouped.values()), default=0)
-        stacked_total = max(1, max_variants)
-        height_ratios, gap_row_indices = _build_stacked_height_ratios(
-            rows_n, stacked_total, STACKED_GROUP_GAP_RATIO
-        )
-        if not height_ratios:
-            height_ratios = [1.0]
-        print(f"Height ratios: {height_ratios}")
-        rows_total = len(height_ratios)
-        fig_height = max(10, 3.6 * rows_total)
-        gridspec_kw = {"height_ratios": height_ratios, "wspace": 0.2}
-        fig, axes = plt.subplots(
-            rows_total,
-            cols,
-            figsize=(fig_width, fig_height),
-            sharex=True,
-            squeeze=False,
-            gridspec_kw=gridspec_kw,
-        )
+        # print(data[3])
 
-        def hide_axis(row_idx: int, col_idx: int) -> None:
-            axes[row_idx][col_idx].axis("off")
+        # baseline_entry, grouped = _group_variants(data)
+        baseline_entry, grouped, baseline_entry7 = _group_variants(data)
 
-        for gap_row in gap_row_indices:
-            if gap_row < rows_total:
-                for col_idx in range(cols):
-                    hide_axis(gap_row, col_idx)
+        if not grouped:
+            raise ValueError("No parameter variants (suffix 1/2) found in CSV.")
 
-        rows_per_block = stacked_total + 1
+        group_names = list(grouped.keys())
+        n_groups = len(group_names)
+        if not columns:
+            cols = 3 if n_groups > 3 else n_groups
+            cols = max(cols, 1)
+        else:
+            cols = columns
 
-        for group_idx, group_name in enumerate(group_names):
-            col_idx = group_idx % cols
-            block_number = group_idx // cols
-            block_base = block_number * rows_per_block
-            variants = grouped[group_name]
-            if not variants:
+        rows_n = math.ceil(n_groups / cols)
+
+
+        fig_width = max(11, 5.5 * cols)
+        # fig_width = 11
+
+        if not stack_variants:
+            # fig_height = max(10, 5.0 * rows_n)
+            # fig_height = 5.0 * rows_n
+            fig_height = 6
+            fig_width = 7
+            fig, axes = plt.subplots(rows_n, cols, figsize=(fig_width, fig_height), squeeze=False)
+            axes_flat = axes.ravel()
+
+            for subplot_idx, group_name in enumerate(group_names):
+                ax = axes_flat[subplot_idx]
+                variants = grouped[group_name]
+                if group_name == "SBD":
+                    print(group_name)
+                    baseline_entry_to_use = baseline_entry7
+                else:
+                    baseline_entry_to_use = baseline_entry
+                _plot_group_axes(
+                    ax,
+                    baseline_entry_to_use,
+                    variants,
+                    group_name,
+                    subplot_idx,
+                    plot_dimension,
+                    shade_2d,
+                    show_control_points,
+                    stacked_mode=False,
+                    stacked_position=0,
+                    stacked_total=1,
+                )
+
+            # Hide unused axes
+            for ax_idx in range(n_groups, len(axes_flat)):
+                axes_flat[ax_idx].axis("off")
+        # Stacked variant mode
+        else:
+            max_variants = max((len(v) for v in grouped.values()), default=0)
+            stacked_total = max(1, max_variants)
+            height_ratios, gap_row_indices = _build_stacked_height_ratios(
+                rows_n, stacked_total, STACKED_GROUP_GAP_RATIO
+            )
+            if not height_ratios:
+                height_ratios = [1.0]
+            print(f"Height ratios: {height_ratios}")
+            rows_total = len(height_ratios)
+            fig_height = max(10, 3.6 * rows_total)
+            gridspec_kw = {"height_ratios": height_ratios, "wspace": 0.2}
+            fig, axes = plt.subplots(
+                rows_total,
+                cols,
+                figsize=(fig_width, fig_height),
+                sharex=True,
+                squeeze=False,
+                gridspec_kw=gridspec_kw,
+            )
+
+            def hide_axis(row_idx: int, col_idx: int) -> None:
+                axes[row_idx][col_idx].axis("off")
+
+            for gap_row in gap_row_indices:
+                if gap_row < rows_total:
+                    for col_idx in range(cols):
+                        hide_axis(gap_row, col_idx)
+
+            rows_per_block = stacked_total + 1
+
+            for group_idx, group_name in enumerate(group_names):
+                col_idx = group_idx % cols
+                block_number = group_idx // cols
+                block_base = block_number * rows_per_block
+                variants = grouped[group_name]
+                if not variants:
+                    for offset in range(stacked_total):
+                        target_row = block_base + offset
+                        if target_row < rows_total:
+                            hide_axis(target_row, col_idx)
+                    continue
+                group_total = max(1, len(variants))
+                shared_limits = _compute_local_limits(
+                    baseline_entry,
+                    variants,
+                    plot_dimension,
+                    False,
+                    include_baseline=INCLUDE_BASELINE,
+                    stack_mode=stack_variants,
+                    group_name=group_name
+                )
+
+                for offset, variant in enumerate(variants):
+                    target_row = block_base + offset
+                    if target_row >= rows_total:
+                        continue
+                    ax = axes[target_row][col_idx]
+                    _plot_group_axes(
+                        ax,
+                        baseline_entry,
+                        [variant],
+                        group_name,
+                        group_idx,
+                        plot_dimension,
+                        shade_2d,
+                        show_control_points,
+                        stacked_mode=True,
+                        stacked_position=offset,
+                        stacked_total=group_total,
+                        shared_limits=shared_limits,
+                    )
+
+                for extra in range(group_total, stacked_total):
+                    target_row = block_base + extra
+                    if target_row < rows_total:
+                        hide_axis(target_row, col_idx)
+
+            total_slots = rows_n * cols
+            for group_idx in range(len(group_names), total_slots):
+                col_idx = group_idx % cols
+                block_number = group_idx // cols
+                block_base = block_number * rows_per_block
                 for offset in range(stacked_total):
                     target_row = block_base + offset
                     if target_row < rows_total:
                         hide_axis(target_row, col_idx)
-                continue
-            group_total = max(1, len(variants))
-            shared_limits = _compute_local_limits(
-                baseline_entry,
-                variants,
-                plot_dimension,
-                False,
-                include_baseline=INCLUDE_BASELINE,
-                stack_mode=stack_variants,
-                group_name=group_name
-            )
 
-            for offset, variant in enumerate(variants):
-                target_row = block_base + offset
-                if target_row >= rows_total:
-                    continue
-                ax = axes[target_row][col_idx]
-                _plot_group_axes(
-                    ax,
-                    baseline_entry,
-                    [variant],
-                    group_name,
-                    group_idx,
-                    plot_dimension,
-                    shade_2d,
-                    show_control_points,
-                    stacked_mode=True,
-                    stacked_position=offset,
-                    stacked_total=group_total,
-                    shared_limits=shared_limits,
-                )
-
-            for extra in range(group_total, stacked_total):
-                target_row = block_base + extra
-                if target_row < rows_total:
-                    hide_axis(target_row, col_idx)
-
-        total_slots = rows_n * cols
-        for group_idx in range(len(group_names), total_slots):
-            col_idx = group_idx % cols
-            block_number = group_idx // cols
-            block_base = block_number * rows_per_block
-            for offset in range(stacked_total):
-                target_row = block_base + offset
-                if target_row < rows_total:
-                    hide_axis(target_row, col_idx)
-
-    # fig.suptitle(TITLE, y=0.8, fontweight="bold", fontsize=20)
-    if stack_variants:
-        fig.tight_layout(pad=0.9)
-        fig.subplots_adjust(hspace=0.0)
-    else:
-        fig.tight_layout(pad=1.2)
+        # fig.suptitle(TITLE, y=0.8, fontweight="bold", fontsize=20)
+        if stack_variants:
+            fig.tight_layout(pad=0.9)
+            fig.subplots_adjust(hspace=0.0)
+        else:
+            fig.tight_layout(pad=1.2)
 
     # export_plot(
     #     fig,
@@ -992,12 +1119,14 @@ def generate_parameter_plots(
     #     overwrite=overwrite,
     # )
 
-    save_path = os.path.join(os.getcwd(), 'prototype_plots/param_variants.png')
+    save_path = os.path.join(os.getcwd(), f"{output_folder}/{output_filename}.png")
     plt.savefig(save_path, dpi=500, bbox_inches='tight', facecolor='white', edgecolor='none')
-    save_path = os.path.join(os.getcwd(), 'prototype_plots/param_variants.svg')
+    save_path = os.path.join(os.getcwd(), f"{output_folder}/{output_filename}.svg")
     plt.savefig(save_path, dpi=500, bbox_inches='tight', facecolor='white', edgecolor='none')
-    save_path = os.path.join(os.getcwd(), 'prototype_plots/param_variants.pdf')
+    save_path = os.path.join(os.getcwd(), f"{output_folder}/{output_filename}.pdf")
     plt.savefig(save_path, dpi=500, bbox_inches='tight', facecolor='white', edgecolor='none')
+
+    print(f"Plot saved to {output_folder}/{output_filename}.png")
 
 
     if show:

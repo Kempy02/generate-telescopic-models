@@ -1,8 +1,6 @@
-# 2D cross-sections with shading
+# Fig 4 - Geometric Impacts of 2D Parameters
 # python generate_param_plots2D.py --csv datasets/ParamPlots/ParamPlots2D.csv --plot-dimension 2d --shade-2d
 
-# 1D curve comparison
-# python generate_param_plots.py --csv datasets/ParamPlots/ParamPlots1D.csv --plot-dimension 1d
 
 from __future__ import annotations
 
@@ -33,7 +31,7 @@ from io_modules.read_csv import read_param_rows_csv
 
 CSV_PATH = "datasets/ParamPlots/ParamPlots.csv"
 DEFAULT_PLOT_FOLDER = "prototype_plots"
-DEFAULT_PLOT_FILENAME = "param_variants"
+DEFAULT_PLOT_FILENAME = "2D_param_variants"
 
 TITLE = "Geometric Impacts of 2D Parameters"
 
@@ -963,12 +961,14 @@ def generate_parameter_plots(
     #     overwrite=overwrite,
     # )
 
-    save_path = os.path.join(os.getcwd(), 'prototype_plots/param_variants.png')
+    save_path = os.path.join(os.getcwd(), f"{output_folder}/{output_filename}.png")
     plt.savefig(save_path, dpi=500, bbox_inches='tight', facecolor='white', edgecolor='none')
-    save_path = os.path.join(os.getcwd(), 'prototype_plots/param_variants.svg')
+    save_path = os.path.join(os.getcwd(), f"{output_folder}/{output_filename}.svg")
     plt.savefig(save_path, dpi=500, bbox_inches='tight', facecolor='white', edgecolor='none')
-    save_path = os.path.join(os.getcwd(), 'prototype_plots/param_variants.pdf')
+    save_path = os.path.join(os.getcwd(), f"{output_folder}/{output_filename}.pdf")
     plt.savefig(save_path, dpi=500, bbox_inches='tight', facecolor='white', edgecolor='none')
+
+    print(f"Plot saved to {output_folder}/{output_filename}.png/svg/pdf")
 
 
     if show:

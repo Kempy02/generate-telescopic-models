@@ -29,6 +29,14 @@ build/
 *.pdf
 # except for those in the prototype_plots folder:
 !prototype_plots/*.png
+!prototype_plots/*.svg
+!prototype_plots/*.pdf
+!Report/*.png
+!Report/*.svg
+!Report/*.pdf
+!Report/Framework Pipeline/*.png
+!Report/Framework Pipeline/*.svg
+!Report/Framework Pipeline/*.pdf
 
 # Ignore video files
 *.mp4
